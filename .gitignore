@@ -1,3 +1,9 @@
+# IDE
+.vscode
+*.bak
 
-settings/config.ini
-/settings
+# Test, temp and log files
+*.test.*
+*.tmp.*
+*.temp.*
+*.log
