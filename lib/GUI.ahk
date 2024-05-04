@@ -17,7 +17,7 @@ if A_LineFile == A_ScriptFullPath {
 	#Include Gdip_All.ahk
 	ptoken := Gdip_Startup()
 
-	colorTheme := "ultraviolet"
+	colorTheme := "classic"
 	colorThemes := {
 		;? Task/SideBar, Background, Text, Dark
 		classic: ["23272E", "1e2227", "858c98", "1d1f23"],
@@ -172,11 +172,9 @@ Class MacroGui {
 		if !hCtrl || !GetKeyState("LButton", "P") || hCtrl == this.Gui.hwnd
 			return
 		switch n := this.Gui[hCtrl].name, 0 {
-			case "Title":
-				while GetKeyState("LButton", "P")
-					PostMessage(0xA1, 2)
-			case "CloseButton": PostMessage(0x112, 0xF060)
-			case "MinimizeButton": PostMessage(0x112, 0xF020)
+			case "Title":return PostMessage(0xA1, 2)
+			case "CloseButton": return PostMessage(0x112, 0xF060)
+			case "MinimizeButton": return PostMessage(0x112, 0xF020)
 			case "SideBarToggle":
 				for i in this.controls {
 					if i.type == "SideBar" {
@@ -219,11 +217,11 @@ Class MacroGui {
 		static oldCtrl := 0
 		MouseGetPos , , &hwnd, &hCtrl, 2
 		if !hCtrl || hCtrl == this.Gui.hwnd || hwnd !== this.Gui.hwnd
-			return this.hoverCtrl != 0 ? (this.hoverCtrl := 0, this.Show(), oldCtrl := 0) : 0
+			return this.hoverCtrl != 0 ? (this.hoverCtrl := 0, this.Show(), oldCtrl := hCtrl) : oldCtrl:=hCtrl
 		if hCtrl == oldCtrl
 			return
 		oldCtrl := hCtrl
-		this.hoverCtrl := InStr(this.Gui[hCtrl].name, "Button") ? this.Gui[hCtrl].name : 0
+		this.hoverCtrl := RegExMatch(this.Gui[hCtrl].name, "i)^Button") ? this.Gui[hCtrl].name : 0
 		this.Show()
 	}
 }
