@@ -13,11 +13,11 @@ if A_LineFile == A_ScriptFullPath {
 	#Warn All, StdOut
 
 	#Include *i ..\..\natroMacroDev\lib\JSON.ahk
-	
+
 	#Include Gdip_All.ahk
 	ptoken := Gdip_Startup()
 
-	colorTheme := "OG"
+	colorTheme := "classic"
 	colorThemes := {
 		;? Task/SideBar, Background, Text, Dark
 		classic: ["23272E", "1e2227", "858c98", "1d1f23"],
@@ -37,35 +37,61 @@ if A_LineFile == A_ScriptFullPath {
 		.AddGroupBox(235, 40, 213, 75, "Auto Equip", 80)
 		.AddGroupBox(10, 125, 438, 90, "Item Collecting", 100)
 		;? Obby
-		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Do Obby")
-		.AddSwitch(25, 85, 1, (*) => "", 1).AddText(53,86,unset,unset,"s12","Check for Obby Buff Effect")
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53, 61, unset, unset, "s12", "Do Obby")
+		.AddSwitch(25, 85, 1, (*) => "", 1).AddText(53, 86, unset, unset, "s12", "Check for Obby Buff Effect")
 		;? Auto Equip
-		.AddSwitch(250, 60, 1, (*) => "", 2).AddText(278,61,unset,unset,"s12","Enable Auto Equip")
+		.AddSwitch(250, 60, 1, (*) => "", 2).AddText(278, 61, unset, unset, "s12", "Enable Auto Equip")
 		.AddButton(245, 85, 100, 20, "Select Slot", (*) => MsgBox("SlotSelection"), "SlotSelection")
 		;? Item Collecting
 		.AddSwitch(25, 140, 1, (*) => "", 3)
-		.AddText(53,141,unset,unset,"s12","Collect Items Around the Map")
+		.AddText(53, 141, unset, unset, "s12", "Collect Items Around the Map")
 		.AddGroupBox(20, 164, 418, 41, "Collect From Spots", 120)
-		loop 7
-			MainGui.AddSwitch((A_Index-1)*57+35, 180, 1, (*) => "", 3+A_Index)
-			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
-		;; Crafting Tab
-		MainGui.UseTab("Crafting")
+	loop 7
+		MainGui.AddSwitch((A_Index - 1) * 57 + 35, 180, 1, (*) => "", 3 + A_Index)
+			.AddText((A_Index - 1) * 57 + 68, 181, unset, unset, "s12", A_Index)
+	;; Crafting Tab
+	MainGui.UseTab("Crafting")
 		;; Item Crafting
 		.AddGroupBox(10, 40, 225, 170, "Item Crafting", 80)
-		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Auto Item Crafting")
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53, 61, unset, unset, "s12", "Auto Item Crafting")
 		.AddGroupBox(20, 90, 200, 110, "Crafting Options", 100)
-		.AddSwitch(35, 110, 50, (*) => "", 1).AddText(65,110,unset,unset,"s12","Gilded Coins")
-		;? idk how to add a scroller keep it in the crafting options group box tho, just to be clean 
-		;? dolph could add more stuff to craft so its best to have it near the bottom to begin with
-
+		.AddSwitch(35, 110, 50, (*) => "", 1).AddText(65, 110, unset, unset, "s12", "Gilded Coins")
 		;; Potion crafting
 		.AddGroupBox(245, 40, 205, 170, "Potion Crafting", 90)
-		.AddSwitch(265, 60, 1, (*) => "", 0).AddText(295,61,unset,unset,"s12","Auto Potion Crafting")
+		.AddSwitch(265, 60, 1, (*) => "", 0).AddText(295, 61, unset, unset, "s12", "Auto Potion Crafting")
 		.AddGroupBox(258, 90, 180, 110, "Crafting Slots", 80)
 
-		;; No Tab
-		MainGui.UseTab(0)
+	MainGui.UseTab("Status")
+		.AddGroupBox(10, 40, 125, 170, "Stats", 40)
+		.AddText(15, 60, unset, unset, "s12", "Collection Loops: ")
+		.AddText(15, 80, unset, unset, "s12", "Disconnects: ")
+		.AddText(15, 100, unset, unset, "s12", "Obby Attempts: ")
+		.AddText(15, 120, unset, unset, "s12", "Obby Completes: ")
+		.AddText(15, 140, unset, unset, "s12", "Run Time: ")
+		.AddGroupBox(150, 40, 300, 80, "Webhook Settings", 110)
+		.AddSwitch(170, 60, 1, (*) => "", 0).AddText(200, 60, unset, unset, "s12", "Enable Webhook")
+		.AddSwitch(300, 60, 1, (*) => "", 0).AddText(330, 60, unset, unset, "s12", "Important Events Only")
+		.AddGroupBox(150, 130, 100, 80, "Other", 40)
+		.AddGroupBox(240, 130, 210, 80, "Roll Detection", 90)
+
+	MainGui.UseTab("Settings")
+		.AddGroupBox(10, 40, 435, 80, "General Settings", 100)
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(60, 60, unset, unset, "s12", "VIP Gamepass Owned")
+		.AddSwitch(25, 90, 1, (*) => "", 0).AddText(60, 90, unset, unset, "s12", "Use Arcane Teleport Paths")
+		.AddGroupBox(10, 135, 435, 80, "Reconnect", 70)
+		.AddSwitch(25, 150, 1, (*) => "", 0).AddText(60, 150, unset, unset, "s12", "Enable Auto-Reconnect (MUST use Roblox Player (web vers.))")
+		.AddText(25, 170, unset, unset, "s12", "Private Server Link:")
+
+
+	MainGui.UseTab("Credits")
+		;;dolph credits
+		.AddGroupBox(10, 40, 200, 175, "The Creator", 80)
+		.AddGroupBox(220, 40, 228, 80, "The Insporation", 95)
+		.AddGroupBox(220, 135, 228, 80, "Other", 40)
+
+
+	;; No Tab
+	MainGui.UseTab(0)
 		.AddButton(10, 222, 70, 20, "Start", (*) => MsgBox("start"), "StartButton")
 		.AddButton(90, 222, 70, 20, "Pause", (*) => MsgBox("Pause"), "PauseButton")
 		.AddButton(170, 222, 70, 20, "Stop", (*) => MsgBox("Stop"), "StopButton")
@@ -132,7 +158,7 @@ Class MacroGui {
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), Gdip_FillEllipse(this.G, pBrush, j.x - 1 + j.state * 13, j.y - 0.5, 15, 15), Gdip_DeleteBrush(pBrush)
 						if not j.state
 							pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[1]), Gdip_FillEllipse(this.G, pBrush, j.x + 1 + j.state * 13, j.y + 1.5, 11, 11), Gdip_DeleteBrush(pBrush)
-					case "Text":Gdip_TextToGraphics(this.G, j.text, j.options " x" j.x " y" j.y " s12 cFF" colorChoice[3], , j.w, j.h)
+					case "Text": Gdip_TextToGraphics(this.G, j.text, j.options " x" j.x " y" j.y " s12 cFF" colorChoice[3], , j.w, j.h)
 				}
 			}
 		}
@@ -145,7 +171,7 @@ Class MacroGui {
 	}
 
 	AddSideBar(state?, tabs?) {
-		this.controls.push(j:={ type: "SideBar", color: "", state: IsSetV(&state) || false, tabs: IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] })
+		this.controls.push(j := { type: "SideBar", color: "", state: IsSetV(&state) || false, tabs: IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] })
 		this.Gui.AddText("x" this.w - (IsSetV(&state) ? 118 : 38) " y" this.h - 25 " w30 h25 vSideBarToggle")
 		for i in IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] {
 			this.Gui.AddText("vTabButton" i)
@@ -166,14 +192,14 @@ Class MacroGui {
 	}
 
 	AddSwitch(x, y, state, function, name) {
-		this.controls.push({ type: "Switch", x: x, y: y, w: 25, h: 10, state: state, tab: this.usedTab})
+		this.controls.push({ type: "Switch", x: x, y: y, w: 25, h: 10, state: state, tab: this.usedTab })
 		i := this.controls.length
 		this.Gui.AddText("x" x " y" y " w" 25 " h" 10 " vSwitch" this.controls.length).function := (p*) => function(this.controls[i].state, p*)
 		return this
 	}
 
-	AddText(x, y, w?, h?, options:="", text:="") {
-		this.controls.push({type: "Text", x: x, y: y, w: IsSetV(&w), h: IsSetV(&h), options: options, text: text, tab: this.usedTab})
+	AddText(x, y, w?, h?, options := "", text := "") {
+		this.controls.push({ type: "Text", x: x, y: y, w: IsSetV(&w), h: IsSetV(&h), options: options, text: text, tab: this.usedTab })
 		return this
 	}
 
@@ -185,7 +211,7 @@ Class MacroGui {
 		if !hCtrl || !GetKeyState("LButton", "P") || hCtrl == this.Gui.hwnd
 			return
 		switch n := this.Gui[hCtrl].name, 0 {
-			case "Title":return PostMessage(0xA1, 2)
+			case "Title": return PostMessage(0xA1, 2)
 			case "CloseButton": return PostMessage(0x112, 0xF060)
 			case "MinimizeButton": return PostMessage(0x112, 0xF020)
 			case "SideBarToggle":
@@ -230,7 +256,7 @@ Class MacroGui {
 		static oldCtrl := 0
 		MouseGetPos , , &hwnd, &hCtrl, 2
 		if !hCtrl || hCtrl == this.Gui.hwnd || hwnd !== this.Gui.hwnd
-			return this.hoverCtrl != 0 ? (this.hoverCtrl := 0, this.Show(), oldCtrl := hCtrl) : oldCtrl:=hCtrl
+			return this.hoverCtrl != 0 ? (this.hoverCtrl := 0, this.Show(), oldCtrl := hCtrl) : oldCtrl := hCtrl
 		if hCtrl == oldCtrl
 			return
 		oldCtrl := hCtrl
