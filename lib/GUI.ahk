@@ -5,6 +5,7 @@
  * @date 2024/05/04
  * @version 0.0.1
  ***********************************************************************/
+;! This is only testing; will not be in final
 if A_LineFile == A_ScriptFullPath {
 	#SingleInstance Force
 	#Requires AutoHotkey v2.0
