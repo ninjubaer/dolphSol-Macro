@@ -12,8 +12,8 @@ if A_LineFile == A_ScriptFullPath {
 	#MaxThreads 255
 	#Warn All, StdOut
 
-	#Include ..\..\natroMacroDev\lib\JSON.ahk
-
+	#Include *i ..\..\natroMacroDev\lib\JSON.ahk
+	
 	#Include Gdip_All.ahk
 	ptoken := Gdip_Startup()
 
@@ -41,13 +41,16 @@ if A_LineFile == A_ScriptFullPath {
 		;? Auto Equip
 		.AddSwitch(250, 60, 1, (*) => "", 2).AddText(278,61,unset,unset,"s12","Enable Auto Equip")
 		.AddButton(245, 85, 100, 20, "Select Slot", (*) => MsgBox("SlotSelection"), "SlotSelection")
-
+		;? Item Collecting
 		.AddSwitch(25, 140, 1, (*) => "", 3)
 		.AddText(53,141,unset,unset,"s12","Collect Items Around the Map")
 		.AddGroupBox(20, 164, 418, 41, "Collect From Spots", 120)
 		loop 7
 			MainGui.AddSwitch((A_Index-1)*57+35, 180, 1, (*) => "", 3+A_Index)
 			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
+		;; Crafting Tab
+		MainGui.UseTab("Crafting")
+
 		;; No Tab
 		MainGui.UseTab(0)
 		.AddButton(10, 222, 70, 20, "Start", (*) => MsgBox("start"), "StartButton")
@@ -220,10 +223,8 @@ Class MacroGui {
 		if hCtrl == oldCtrl
 			return
 		oldCtrl := hCtrl
-		this.hoverCtrl := this.Gui[hCtrl].name
+		this.hoverCtrl := InStr(this.Gui[hCtrl].name, "Button") ? this.Gui[hCtrl].name : 0
 		this.Show()
 	}
 }
 IsSetV(&v := unset) => IsSet(v) ? v : 0
-
- ;//test comment
