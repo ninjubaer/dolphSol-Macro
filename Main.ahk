@@ -13,12 +13,12 @@
 #singleinstance, force
 #noenv
 #persistent
-SetWorkingDir, % A_ScriptDir "\lib"
-CoordMode, Pixel, Screen
-CoordMode, Mouse, Screen
+SetWorkingDir A_ScriptDir "\lib"
+CoordMode(Pixel, Screen)
+CoordMode(Mouse, Screen)
 
 if (RegExMatch(A_ScriptDir,"\.zip")){
-    MsgBox, 0, % "Running From ZIP", % "You are attempting to run the script from a ZIP file.`n`nPlease Extract/Unzip the file first, then run the script in the extracted folder."
+    MsgBox(0, "Running From ZIP", "You are attempting to run the script from a ZIP file.`n`nPlease Extract/Unzip the file first, then run the script in the extracted folder.")
     ExitApp
 }
 
@@ -88,7 +88,7 @@ global rarityIndex := {0:"None"
 reverseIndices(t){
     newT := {}
     for i,v in t {
-        newT[v] := i
+        newT.v := i
     }
     return newT
 }
@@ -174,7 +174,7 @@ dp_loadPaths() {
 dp_loadPaths()
 
 getINIData(path){
-    FileRead, retrieved, %path%
+    FileRead(retrieved, path)
 
     retrievedData := {}
     readingPoint := 0
@@ -187,14 +187,14 @@ getINIData(path){
                 RegExMatch(v,"(.*)(?==)",index)
                 RegExMatch(v,"(?<==)(.*)",value)
                 if (index){
-                    retrievedData[index] := value
+                    retrievedData.index := value
                 }
             } else if (isHeader){
                 readingPoint := 1
             }
         }
     } else {
-        MsgBox, An error occurred while reading %path% data, please review the file.
+        MsgBox("An error occurred while reading " path " data, please review the file.")
         return
     }
     return retrievedData
@@ -209,7 +209,7 @@ writeToINI(path,object,header){
     formatted := header
 
     for i,v in object {
-        formatted .= i . "=" . v . "`r`n"
+        formatted .= i "=" v "`r`n"
     }
 
     FileDelete(path)
@@ -227,9 +227,9 @@ loadData(){
     newOptions := {}
     for i,v in options {
         if (savedRetrieve.HasKey(i)){
-            newOptions[i] := savedRetrieve[i]
+            newOptions.i := savedRetrieve.i
         } else {
-            newOptions[i] := v
+            newOptions.i := v
         }
     }
     options := newOptions
@@ -342,7 +342,7 @@ Class CreateFormData {
 
     RandomBoundary() {
         str := "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z"
-        Sort, str, D| Random
+        Sort str, D| Random
         str := StrReplace(str, "|")
         Return SubStr(str, 1, 12)
     }
@@ -604,7 +604,7 @@ align(forCollection := 0){ ; align v2
 }
 
 collect(num){
-    if (!options["ItemSpot" num])
+    if (!options.("ItemSpot" num))
         return
     loop 6 
     {
@@ -1149,9 +1149,9 @@ handleCrafting(){
         sleep 500
         updateStatus("Crafting Potions")
         Loop 3 {
-            v := options["PotionCraftingSlot" A_Index]
-            if (v && craftingInfo[potionIndex[v]]){
-                info := craftingInfo[potionIndex[v]]
+            v := options.("PotionCraftingSlot" A_Index)
+            if (v && craftingInfo.(potionIndex.v)){
+                info := craftingInfo.(potionIndex.v)
                 loopCount := info.attempts
                 clickCraftingSlot(info.slot)
                 sleep 200
@@ -1184,7 +1184,7 @@ handleCrafting(){
         sleep 500
         updateStatus("Crafting Items")
         if (options.CraftingGildedCoin){
-            info := craftingInfo["Gilded Coin"]
+            info := craftingInfo."Gilded Coin"
             loopCount := info.attempts + Floor(info.addedAttempts*options.CraftingInterval)
             clickCraftingSlot(info.slot)
             sleep 200
@@ -1716,13 +1716,13 @@ updateUIOptions(){
     }
     
     Loop 7 {
-        v := options["ItemSpot" . A_Index]
+        v := options.("ItemSpot" A_Index)
         GuiControl,,CollectSpot%A_Index%CheckBox,%v%
     }
 
     Loop 3 {
-        v := options["PotionCraftingSlot" . A_Index]
-        GuiControl,ChooseString,PotionCraftingSlot%A_Index%DropDown,% potionIndex[v]
+        v := options["PotionCraftingSlot" A_Index]
+        GuiControl,ChooseString,PotionCraftingSlot%A_Index%DropDown, potionIndex.v
     }
 }
 updateUIOptions()
@@ -1744,7 +1744,7 @@ applyNewUIOptions(){
 
     for i,v in directValues {
         GuiControlGet, rValue,,%i%
-        options[v] := rValue
+        options.v := rValue
     }
 
     for i,v in directNumValues {
@@ -1752,7 +1752,7 @@ applyNewUIOptions(){
         m := 0
         if rValue is number
             m := 1
-        options[v] := m ? rValue : 0
+        options.v := m ? rValue : 0
     }
 
     GuiControlGet, privateServerL,,PrivateServerInput
@@ -1781,12 +1781,12 @@ applyNewUIOptions(){
 
     Loop 7 {
         GuiControlGet, rValue,,CollectSpot%A_Index%CheckBox
-        options["ItemSpot" . A_Index] := rValue
+        options.("ItemSpot" A_Index) := rValue
     }
 
     Loop 3 {
         GuiControlGet, rValue,,PotionCraftingSlot%A_Index%DropDown
-        options["PotionCraftingSlot" . A_Index] := reversePotionIndex[rValue]
+        options.("PotionCraftingSlot" A_Index) := reversePotionIndex.rValue
     }
 }
 
@@ -1872,7 +1872,7 @@ updateUI(){
 
     statText := ""
     for i,v in statDisplayInfo {
-        value := options[i]
+        value := options.i
         if (statText){
             statText .= "`n"
         }

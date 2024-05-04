@@ -64,7 +64,7 @@ jump() {
 }
 
 collect(num){
-    if (!options["ItemSpot" num])
+    if (!options.("ItemSpot" num))
         return
     loop 6 
     {
