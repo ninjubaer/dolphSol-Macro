@@ -34,9 +34,14 @@ if A_LineFile == A_ScriptFullPath {
 		.AddGroupBox(10, 40, 215, 75, "Obby", 46)
 		.AddGroupBox(235, 40, 213, 75, "Auto Equip", 80)
 		.AddGroupBox(10, 125, 438, 90, "Item Collecting", 100)
-		.AddSwitch(25, 135, 1, (*) => "", "1")
+		.AddSwitch(25, 140, 1, (*) => "", "1")
+		.AddText(53,141,unset,unset,"s12","Collect Items Around the Map")
+		.AddGroupBox(20, 164, 418, 41, "Collect From Spots", 120)
+		loop 7
+			MainGui.AddSwitch((A_Index-1)*57+35, 180, 1, (*) => "", 1+A_Index)
+			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
 		;; No Tab
-		.UseTab(0)
+		MainGui.UseTab(0)
 		.AddButton(10, 222, 70, 20, "Start", (*) => MsgBox("start"), "StartButton")
 		.AddButton(90, 222, 70, 20, "Pause", (*) => MsgBox("Pause"), "PauseButton")
 		.AddButton(170, 222, 70, 20, "Stop", (*) => MsgBox("Stop"), "StopButton")
@@ -100,6 +105,10 @@ Class MacroGui {
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), Gdip_FillRoundedRectangle(this.G, pBrush, j.x - 1, j.y + 1, 27, 12, 5), Gdip_DeleteBrush(pBrush)
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[1]), Gdip_FillRoundedRectangle(this.G, pBrush, j.x, j.y + 2, 25, 10, 5), Gdip_DeleteBrush(pBrush)
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), Gdip_FillEllipse(this.G, pBrush, j.x - 1 + j.state * 13, j.y - 0.5, 15, 15), Gdip_DeleteBrush(pBrush)
+						if not j.state
+							pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[1]), Gdip_FillEllipse(this.G, pBrush, j.x + 1 + j.state * 13, j.y + 1.5, 11, 11), Gdip_DeleteBrush(pBrush)
+					case "Text":
+						Gdip_TextToGraphics(this.G, j.text, j.options " x" j.x " y" j.y " s12 cFF" colorChoice[3], , j.w, j.h)
 				}
 			}
 		}
@@ -116,14 +125,16 @@ Class MacroGui {
 		} */
 		UpdateLayeredWindow(this.Gui.hwnd, this.hdc)
 		OnMessage(0x201, this.WM_LBUTTONDOWN.bind(this))
+		OnMessage(0x0102, this.WM_CHAR.bind(this))
 		return this
 	}
 
 	AddSideBar(state?, tabs?) {
-		this.controls.push({ type: "SideBar", color: "", state: IsSetV(&state) || false, tabs: IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] })
+		this.controls.push(j:={ type: "SideBar", color: "", state: IsSetV(&state) || false, tabs: IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] })
 		this.Gui.AddText("x" this.w - (IsSetV(&state) ? 118 : 38) " y" this.h - 25 " w30 h25 vSideBarToggle")
 		for i in IsSetV(&tabs) || ["Main", "Crafting", "Status", "Settings", "Credits"] {
-			this.Gui.AddText("x7 y" 27 + (A_Index - 1) * 25 " w" this.w - 14 " h25 vTabButton" i)
+			this.Gui.AddText("vTabButton" i)
+			this.Gui["TabButton" i].Move(j.state ? this.w - 118 : this.w - 38, 27 + ((A_Index - 1) * 25), 108, 25)
 		}
 		return this
 	}
@@ -146,7 +157,13 @@ Class MacroGui {
 		return this
 	}
 
+	AddText(x, y, w?, h?, options:="", text:="") {
+		this.controls.push({type: "Text", x: x, y: y, w: IsSetV(&w), h: IsSetV(&h), options: options, text: text, tab: this.usedTab})
+		return this
+	}
+
 	WM_LBUTTONDOWN(wP, lP, msg, hwnd, *) {
+		this.editActive := 0
 		if hwnd != this.Gui.hwnd
 			return
 		MouseGetPos , , , &hCtrl, 2
@@ -160,8 +177,11 @@ Class MacroGui {
 			case "MinimizeButton": PostMessage(0x112, 0xF020)
 			case "SideBarToggle":
 				for i in this.controls {
-					if i.type == "SideBar"
+					if i.type == "SideBar" {
 						i.state := !i.state, this.Gui["SideBarToggle"].Move(i.state ? this.w - 118 : this.w - 38)
+						for k, v in i.tabs
+							this.Gui["TabButton" v].Move(i.state ? this.w - 118 : this.w - 38, 27 + ((k - 1) * 25), 108, 25)
+					}
 				}
 			default:
 				switch {
@@ -179,6 +199,12 @@ Class MacroGui {
 		}
 		this.Show()
 	}
+	WM_CHAR(wParam, lParam, msg, hwnd, *) {
+		if hwnd != this.Gui.hwnd
+			return
+		ToolTip Chr(wParam)
+		return
+	}
 	OnExit(function) {
 		this.exitFunction := function
 		return this
@@ -189,10 +215,3 @@ Class MacroGui {
 	}
 }
 IsSetV(&v := unset) => IsSet(v) ? v : 0
-showControls(Gui) {
-	controls := Map()
-	for k, v in Gui {
-		controls.Set(k, v.name)
-	}
-	return controls
-}
