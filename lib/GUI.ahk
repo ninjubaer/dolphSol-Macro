@@ -34,11 +34,18 @@ if A_LineFile == A_ScriptFullPath {
 		.AddGroupBox(10, 40, 215, 75, "Obby", 46)
 		.AddGroupBox(235, 40, 213, 75, "Auto Equip", 80)
 		.AddGroupBox(10, 125, 438, 90, "Item Collecting", 100)
-		.AddSwitch(25, 140, 1, (*) => "", "1")
+		;? Obby
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Do Obby")
+		.AddSwitch(25, 85, 1, (*) => "", 1).AddText(53,86,unset,unset,"s12","Check for Obby Buff Effect")
+		;? Auto Equip
+		.AddSwitch(250, 60, 1, (*) => "", 2).AddText(278,61,unset,unset,"s12","Enable Auto Equip")
+		.AddButton(245, 85, 100, 20, "Select Slot", (*) => MsgBox("SlotSelection"), "SlotSelection")
+
+		.AddSwitch(25, 140, 1, (*) => "", 3)
 		.AddText(53,141,unset,unset,"s12","Collect Items Around the Map")
 		.AddGroupBox(20, 164, 418, 41, "Collect From Spots", 120)
 		loop 7
-			MainGui.AddSwitch((A_Index-1)*57+35, 180, 1, (*) => "", 1+A_Index)
+			MainGui.AddSwitch((A_Index-1)*57+35, 180, 1, (*) => "", 3+A_Index)
 			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
 		;; No Tab
 		MainGui.UseTab(0)
@@ -61,6 +68,7 @@ Class MacroGui {
 		this.tab := "Main"
 		this.usedTab := 0
 		this.controls := []
+		this.hoverCtrl := 0
 
 		this.hBM := CreateDIBSection(this.w, this.h)
 		this.hDC := CreateCompatibleDC()
@@ -99,7 +107,7 @@ Class MacroGui {
 								, Gdip_TextToGraphics(this.G, j.title, "x" j.x + 10 " s12 y" j.y - 5 " cff" colorChoice[3])
 					case "Button":
 						Gdip_DrawRectangle(this.G, pPen := Gdip_CreatePen("0xFF" colorChoice[3], 2), j.x + 5, j.y, j.w, j.h), Gdip_DeletePen(pPen)
-						Gdip_FillRectangle(this.G, pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), j.x + 5, j.y + j.h - 3, j.w, 3), Gdip_DeleteBrush(pBrush)
+						Gdip_FillRectangle(this.G, pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[this.hoverCtrl = "Button" j.name ? 1 : 3]), j.x + 5, j.y + j.h - 3, j.w, 4), Gdip_DeleteBrush(pBrush)
 						Gdip_TextToGraphics(this.G, j.text, "Center vCenter x" j.x + 8 " y" j.y + 5 " s12 cFF" colorChoice[3], , j.w - 7, j.h - 10)
 					case "Switch":
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), Gdip_FillRoundedRectangle(this.G, pBrush, j.x - 1, j.y + 1, 27, 12, 5), Gdip_DeleteBrush(pBrush)
@@ -107,25 +115,15 @@ Class MacroGui {
 						pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[3]), Gdip_FillEllipse(this.G, pBrush, j.x - 1 + j.state * 13, j.y - 0.5, 15, 15), Gdip_DeleteBrush(pBrush)
 						if not j.state
 							pBrush := Gdip_BrushCreateSolid("0xFF" colorChoice[1]), Gdip_FillEllipse(this.G, pBrush, j.x + 1 + j.state * 13, j.y + 1.5, 11, 11), Gdip_DeleteBrush(pBrush)
-					case "Text":
-						Gdip_TextToGraphics(this.G, j.text, j.options " x" j.x " y" j.y " s12 cFF" colorChoice[3], , j.w, j.h)
+					case "Text":Gdip_TextToGraphics(this.G, j.text, j.options " x" j.x " y" j.y " s12 cFF" colorChoice[3], , j.w, j.h)
 				}
 			}
 		}
 
-
-		/* for k,v in this.controls {
-		    switch v.type,0 {
-		        case "Checkbox":
-		            ;drawCheckbox
-		
-		        default:
-		
-		    }
-		} */
 		UpdateLayeredWindow(this.Gui.hwnd, this.hdc)
 		OnMessage(0x201, this.WM_LBUTTONDOWN.bind(this))
 		OnMessage(0x0102, this.WM_CHAR.bind(this))
+		OnMessage(0x0200, this.WM_MOUSEMOVE.bind(this))
 		return this
 	}
 
@@ -212,6 +210,17 @@ Class MacroGui {
 	UseTab(tab) {
 		this.usedTab := tab
 		return this
+	}
+	WM_MOUSEMOVE(*) {
+		static oldCtrl := 0
+		MouseGetPos , , &hwnd, &hCtrl, 2
+		if !hCtrl || hCtrl == this.Gui.hwnd || hwnd !== this.Gui.hwnd
+			return this.hoverCtrl != 0 ? (this.hoverCtrl := 0, this.Show(), oldCtrl := 0) : 0
+		if hCtrl == oldCtrl
+			return
+		oldCtrl := hCtrl
+		this.hoverCtrl := this.Gui[hCtrl].name
+		this.Show()
 	}
 }
 IsSetV(&v := unset) => IsSet(v) ? v : 0
