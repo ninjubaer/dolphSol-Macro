@@ -50,7 +50,9 @@ if A_LineFile == A_ScriptFullPath {
 			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
 		;; Crafting Tab
 		MainGui.UseTab("Crafting")
-
+		.AddGroupBox(10, 40, 215, 75, "Item Crafting", 90)
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Automatic Item Crafting")
+		.AddSwitch(25, 85, 1, (*) => "", 1).AddText(53,86,unset,unset,"s12","Gilded Coins")
 		;; No Tab
 		MainGui.UseTab(0)
 		.AddButton(10, 222, 70, 20, "Start", (*) => MsgBox("start"), "StartButton")
