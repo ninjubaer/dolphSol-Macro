@@ -38,49 +38,45 @@ getWalkTime(d){
 }
 
 walkSleep(d){
-    Sleep, % getWalkTime(d)
+    sleep % getWalkTime(d)
 }
 
-press(k, duration := 50) {
-    Send, {%k% Down}
+press(k, k2:="", duration := 50) {
+    send "{" k " Down}"
+    if (k2!="")
+        send "{" k2 " Down}"
     walkSleep(duration)
-    Send, {%k% Up}
-}
-press2(k, k2, duration := 50) {
-    Send, {%k% Down}
-    Send, {%k2% Down}
-    walkSleep(duration)
-    Send, {%k% Up}
-    Send, {%k2% Up}
+    send "{" k " Up}"
+    if (k2!="")
+        send "{" k2 " Up}"
 }
 
 reset() {
     press("Esc",150)
-    Sleep, 50
+    sleep 50
     press("r",150)
-    Sleep, 50
+    sleep 50
     press("Enter",150)
-    Sleep, 50
+    sleep 50
 }
 jump() {
     press("Space")
 }
 
 collect(num){
-    if (!options["ItemSpot" . num]){
+    if (!options["ItemSpot" num])
         return
-    }
-    Loop, 6 
+    loop 6 
     {
-        Send {f}
-        Sleep, 75
+        Send "{f}"
+        sleep 75
     }
-    Send {e}
-    Sleep, 50
+    Send "{e}"
+    sleep 50
 }
 
 isFullscreen() {
-	WinGetPos,,, w, h, Roblox
+	WinGetPos ,, w, h, Roblox
 	return (w = A_ScreenWidth && h = A_ScreenHeight)
 }
 
@@ -90,7 +86,7 @@ GetRobloxHWND()
 		return hwnd
 	else if (WinExist("Roblox ahk_exe ApplicationFrameHost.exe"))
 	{
-		ControlGet, hwnd, Hwnd, , ApplicationFrameInputSinkWindow1
+		ControlGet hwnd, Hwnd, , ApplicationFrameInputSinkWindow1
 		return hwnd
 	}
 	else
@@ -129,9 +125,9 @@ closeChat(){
     PixelGetColor, chatCheck, % pX + 75, % pY + 12, RGB
     if (compareColors(chatCheck,0xffffff) < 16){ ; is chat open??
         MouseMove, % pX + 75, % pY + 12
-        Sleep, 300
+        sleep 300
         MouseClick
-        Sleep, 100
+        sleep 100
     }
 }
 
@@ -154,21 +150,21 @@ getMenuButtonPosition(num, ByRef posX := "", ByRef posY := ""){ ; num is 1-7, 1 
 clickMenuButton(num){
     getMenuButtonPosition(num, posX, posY)
     MouseMove, posX, posY
-    Sleep, 200
+    sleep 200
     MouseClick
 }
 
 alignCamera(){
     closeChat()
-    Sleep, 200
+    sleep 200
 
     clickMenuButton(2)
-    Sleep, 500
+    sleep 500
     getRobloxPos(rX,rY,rW,rH)
     MouseMove, % rX + rW*0.15, % rY + 44 + rH*0.05 + options.BackOffset
-    Sleep, 200
+    sleep 200
     MouseClick
-    Sleep, 500
+    sleep 500
 }
 
 global azertyReplace := {"w": "z", "a": "q"} 

@@ -514,7 +514,7 @@ rollDetection(bypass := 0,is1m := 0,starMap := 0){
         rareDisplaying := 1
         if (centerColored){
             rareDisplaying := 2
-            Sleep, 750
+            sleep 750
             blackCorners := 0
             for i,point in scanPoints {
                 PixelGetColor, pColor, % point[1], % point[2], RGB
@@ -548,9 +548,9 @@ rollDetection(bypass := 0,is1m := 0,starMap := 0){
                 Gdip_BitmapApplyEffect(starCheckMap,effect)
 
                 starPixels := 0
-                Loop, % 50 {
+                loop % 50 {
                     x := A_Index - 1
-                    Loop, % 50 {
+                    loop % 50 {
                         y := A_Index - 1
 
                         pixelColor := Gdip_GetPixel(starCheckMap, x, y)
@@ -568,13 +568,13 @@ rollDetection(bypass := 0,is1m := 0,starMap := 0){
                 Gdip_DisposeBitmap(retrievedMap)
             }
             
-            Sleep, 8000
+            sleep 8000
             rollDetection(cColor,is1m,starMap)
         } else {
             if (sendMinimum && sendMinimum < 10000) {
                 webhookPost({embedContent:"You rolled a 1/1k+",embedTitle:"Roll",pings: (pingMinimum && pingMinimum < 10000)})
             }
-            Sleep, 5000
+            sleep 5000
             rareDisplaying := 0
         }
     }
@@ -585,7 +585,7 @@ rollDetection(bypass := 0,is1m := 0,starMap := 0){
     is100k := whiteCorners >= 3
     if (!is100k){
         Loop 4 {
-            Sleep, 500
+            sleep 500
             whiteCorners := 0
             for i,point in scanPoints {
                 PixelGetColor, pColor, % point[1], % point[2], RGB
@@ -602,7 +602,7 @@ rollDetection(bypass := 0,is1m := 0,starMap := 0){
         rareDisplaying := 3
         auraInfo := getAuraInfo(bypass,1)
         handleRollPost(bypass,auraInfo,starMap)
-        Sleep, 6000
+        sleep 6000
         rareDisplaying := 0
     } else if (rareDisplaying >= 2){
         auraInfo := getAuraInfo(bypass,0,is1m)

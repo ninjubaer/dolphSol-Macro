@@ -8,6 +8,6 @@ CoordMode, Mouse, Screen
 alignCamera()
 
 Send {Space Down}
-Send {w Down}
-Send {d Down}
+Send "{w Down}"
+Send "{d Down}"
 walkSleep(40000)

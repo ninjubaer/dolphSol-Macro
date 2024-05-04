@@ -1,8 +1,8 @@
 #singleinstance, force
 #noenv
 RegExMatch(A_ScriptDir, ".*(?=\\paths)", mainDir)
-CoordMode, Pixel, Screen
-CoordMode, Mouse, Screen
+CoordMode Pixel, Screen
+CoordMode Mouse, Screen
 #Include ..\lib\pathReference.ahk
 
 ; revision by sanji (sir.moxxi) and Flash (drflash55)
@@ -10,219 +10,219 @@ CoordMode, Mouse, Screen
 if (options.ArcanePath){
     if (options.VIP){
 
-        Send {d Down} ;reposition
+        Send "{d Down}" ;reposition
         walkSleep(50)
-        Send {d Up}
-        send {w down}
+        Send "{d Up}"
+        send "{w down}"
         walkSleep(100)
         jump()
         walkSleep(400)
-        send {a down} ;move left earlier
+        send "{a down}" ;move left earlier
         walkSleep(150)
         jump()
         walkSleep(200)
-        send {w up} ;only move left in the air, prevents the first near miss
+        send "{w up}" ;only move left in the air, prevents the first near miss
         walkSleep(200)
-        send {w down}
+        send "{w down}"
         walkSleep(260)
-        send {a up}
+        Send "{a Up}"
         walkSleep(100)
         jump()
         walkSleep(100)
-        send {a down} ;move further left in the air
+        Send "{a Down}" ;move further left in the air
         walkSleep(330)
-        send {a up}
+        Send "{a Up}"
         walkSleep(180)
         jump()
         walkSleep(100)
-        send {a down} ;move further left in the air again, prevents the second near miss
+        Send "{a Down}" ;move further left in the air again, prevents the second near miss
         walkSleep(550)
         jump()
         walkSleep(230)
-        send {w up}
+        Send "{w Up}"
         walkSleep(410)
         jump()
         walkSleep(550)
         jump()
         walkSleep(150)
-        send {a up}
-        Sleep, 100
-        send {a down} ;start of arcane jump
-        send {w down}
+        Send "{a Up}"
+        sleep 100
+        Send "{a Down}" ;start of arcane jump
+        Send "{w Down}"
         walkSleep(1200)
-        send {w up} ;positioning
+        Send "{w Up}" ;positioning
         walkSleep(300)
-        send {w down}
+        Send "{w Down}"
         walkSleep(50)
         jump()
         walkSleep(800)
-        send {a up}
-        send {w up}
-        Sleep, 100
-        send {a down} ;move against tree wall
+        Send "{a Up}"
+        Send "{w Up}"
+        sleep 100
+        Send "{a Down}" ;move against tree wall
         walkSleep(730)
-        send {a up}
-        send {w down}
+        Send "{a Up}"
+        Send "{w Down}"
         walkSleep(1000)
-        send {w up}
+        Send "{w Up}"
         Send {a, d Down}
         Send {Left Down}
-        Sleep, 250 ;adjusted cam turn
+        sleep 250 ;adjusted cam turn
         Send {Left up}
         Send {a, d up}
-        Sleep, 200
-        send {a down}
-        send {w down}
+        sleep 200
+        Send "{a Down}"
+        Send "{w Down}"
         walkSleep(325) ;adjusted timing for jump
         jump()
         arcaneTeleport()
         walkSleep(300)
-        send {a up}
-        send {w up}
-        Sleep, 100
-        send {w down}
+        Send "{a Up}"
+        Send "{w Up}"
+        sleep 100
+        Send "{w Down}"
         walkSleep(1500) ;move further forwards in case arcane teleport fell slightly short
-        send {w up}
-        send {a down}
+        Send "{w Up}"
+        Send "{a Down}"
         walkSleep(300)
-        send {a up}
-        send {s down}
+        Send "{a Up}"
+        Send "{s Down}"
         walkSleep(500) ;move back when macro moved to the left in case on the right side
-        send {s up}
-        send {d down}
+        Send "{s Up}"
+        Send "{d Down}"
         walkSleep(1000) ;try to head back to the blessing if missed on the left side
-        send {d up}
+        Send "{d Up}"
     } else {
-        send {w down}
+        Send "{w Down}"
         walkSleep(100)
         jump()
         walkSleep(550)
-        send {a down}
+        Send "{a Down}"
         walkSleep(150)
         jump()
         walkSleep(650)
         jump()
         walkSleep(500)
-        send {a up}
+        Send "{a Up}"
         walkSleep(100)
         jump()
-        send {a down}
+        Send "{a Down}"
         walkSleep(200)
-        send {a up}
+        Send "{a Up}"
         walkSleep(400)
-        send {a down}
-        send {w down}
+        Send "{a Down}"
+        Send "{w Down}"
         walkSleep(50)
         jump()
         walkSleep(300)
-        send {w up}
+        Send "{w Up}"
         walkSleep(350)
         jump()
         walkSleep(700)
         jump()
         walkSleep(100)
-        send {a up}
-        Sleep, 100
-        send {a down}
-        send {w down}
+        Send "{a Up}"
+        sleep 100
+        Send "{a Down}"
+        Send "{w Down}"
         walkSleep(1250)
         jump()
         walkSleep(500)
-        send {a up}
-        send {w up}
-        Sleep, 100
-        send {a down}
+        Send "{a Up}"
+        Send "{w Up}"
+        sleep 100
+        Send "{a Down}"
         walkSleep(1100)
-        send {a up}
-        send {w down}
+        Send "{a Up}"
+        Send "{w Down}"
         walkSleep(700)
-        send {w up}
+        Send "{w Up}"
         Send {a, d Down}
         Send {Left Down}
         walkSleep(200)
         Send {Left up}
         Send {a, d up}
-        Sleep, 200
-        send {a down}
-        send {w down}
+        sleep 200
+        Send "{a Down}"
+        Send "{w Down}"
         walkSleep(300)
         jump()
         press("x",150)
         walkSleep(300)
-        send {a up}
-        send {w up}
-        Sleep, 100
-        send {w down}
+        Send "{a Up}"
+        Send "{w Up}"
+        sleep 100
+        Send "{w Down}"
         walkSleep(800)
-        send {w up}
-        send {a down}
+        Send "{w Up}"
+        Send "{a Down}"
         walkSleep(500)
-        send {a up}
-        send {d down}
+        Send "{a Up}"
+        Send "{d Down}"
         walkSleep(2000) 
-        send {d up}
+        Send "{d Up}"
     }
 } else {
     if (options.VIP) ;newest changes done here
     { 
-        Send {d Down} ;reposition
+        Send "{d Down}" ;reposition
         walkSleep(50)
-        Send {d Up}
-        send {w down}
+        Send "{d Up}"
+        Send "{w Down}"
         walkSleep(100)
         jump()
         walkSleep(400)
-        send {a down} ;move left earlier
+        Send "{a Down}" ;move left earlier
         walkSleep(150)
         jump()
         walkSleep(200)
-        send {w up} ;only move left in the air, prevents the first near miss
+        Send "{w Up}" ;only move left in the air, prevents the first near miss
         walkSleep(200)
-        send {w down}
+        Send "{w Down}"
         walkSleep(260)
-        send {a up}
+        Send "{a Up}"
         walkSleep(100)
         jump()
         walkSleep(100)
-        send {a down} ;move further left in the air
+        Send "{a Down}" ;move further left in the air
         walkSleep(330)
-        send {a up}
+        Send "{a Up}"
         walkSleep(180)
         jump()
         walkSleep(100)
-        send {a down} ;move further left in the air again, prevents the second near miss
+        Send "{a Down}" ;move further left in the air again, prevents the second near miss
         walkSleep(550)
         jump()
         walkSleep(230)
-        send {w up}
+        Send "{w Up}"
         walkSleep(410)
         jump()
         walkSleep(550)
         jump()
         walkSleep(1400)
-        Send {s Down} ;real obby
+        Send "{s Down}" ;real obby
         jump()
         walkSleep(350)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(200)
-        Send {s Down}
+        Send "{s Down}"
         walkSleep(60)
         jump()
         walkSleep(180)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(500)
-        Send {s Down}
+        Send "{s Down}"
         jump()
         walkSleep(150)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(500)
         jump()
         walkSleep(40)
-        send {w down}
+        Send "{w Down}"
         walkSleep(680)
         jump()
         walkSleep(430)
-        send {a up}
+        Send "{a Up}"
         walkSleep(360)
         jump()
         walkSleep(640)
@@ -230,60 +230,60 @@ if (options.ArcanePath){
         walkSleep(640)
         jump()
         walksleep(400)
-        Send {d Down} ; finish
+        Send "{d Down}" ; finish
         walkSleep(600)
-        Send {d Up}
-        send {w up}
+        Send "{d Up}"
+        Send "{w Up}"
     } else {
-        send {w Down}
+        Send "{w Down}"
         walkSleep(100)
         jump()
         walkSleep(550)
-        send {a down}
+        Send "{a Down}"
         walkSleep(150)
         jump()
         walkSleep(650)
         jump()
         walkSleep(500)
-        send {a up}
+        Send "{a Up}"
         walkSleep(100)
         jump()
-        send {a down}
+        Send "{a Down}"
         walkSleep(200)
-        send {a up}
+        Send "{a Up}"
         walkSleep(400)
-        send {a down}
-        send {w down}
+        Send "{a Down}"
+        Send "{w Down}"
         walkSleep(50)
         jump()
         walkSleep(300)
-        send {w up}
+        Send "{w Up}"
         walkSleep(350)
         jump()
         walkSleep(700)
         jump()
         walkSleep(1300)
-        Send {s Down} ;real obby
+        Send "{s Down}" ;real obby
         jump()
         walkSleep(500)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(200)
-        Send {s Down}
+        Send "{s Down}"
         jump()
         walkSleep(300)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(450)
         jump()
-        Send {s Down}
+        Send "{s Down}"
         walkSleep(200)
-        Send {s Up}
+        Send "{s Up}"
         walkSleep(450)
-        send {w down}
+        Send "{w Down}"
         jump()
         walkSleep(700)
         jump()
         walkSleep(550)
-        send {a up}
+        Send "{a Up}"
         walkSleep(100)
         jump()
         walkSleep(700)
@@ -291,10 +291,10 @@ if (options.ArcanePath){
         walkSleep(700)
         jump()
         walkSleep(600)
-        Send {d Down} ; finish
+        Send "{d Down}" ; finish
         walkSleep(450)
-        send {w up}
+        Send "{w Up}"
         walkSleep(200)
-        Send {d Up}
+        Send "{d Up}"
     }
 }
