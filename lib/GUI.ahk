@@ -224,3 +224,5 @@ Class MacroGui {
 	}
 }
 IsSetV(&v := unset) => IsSet(v) ? v : 0
+
+ ;//test comment
