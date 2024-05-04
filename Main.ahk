@@ -1235,7 +1235,7 @@ screenshotInventories(){ ; from all closed
     waitForInvVisible()
 
     itemButton := getPositionFromAspectRatioUV(0.564405, -0.451327, storageAspectRatio)
-    MouseMove, % itemButton[1], % itemButton[2]
+    MouseMove(itemButton[1], itemButton[2])
     sleep 200
     MouseClick
     sleep 200
@@ -1263,24 +1263,24 @@ checkBottomLeft(){
     Gdip_BitmapApplyEffect(readMap,readEffect1)
     Gdip_BitmapApplyEffect(readMap,readEffect2)
     Gdip_SaveBitmapToFile(readMap,ssPath)
-    OutputDebug, % ocrFromBitmap(readMap)
+    OutputDebug ocrFromBitmap(readMap)
     Gdip_DisposeBitmap(readMap)
     Gdip_DisposeEffect(readEffect1)
 }
 
 getUnixTime(){
     now := A_NowUTC
-    EnvSub, now,1970, seconds
+    EnvSub now,1970, seconds
     return now
 }
 
 
 closeRoblox(){
-    WinClose, Roblox
-    WinClose, % "Roblox Crash"
+    WinClose("Roblox")
+    WinClose("Roblox Crash")
 }
 
-playBitMap := Gdip_CreateBitmapFromFile(imgDir . "play.png")
+playBitMap := Gdip_CreateBitmapFromFile(imgDir "play.png")
 
 isPlayButtonOpen(){
     global playBitMap
@@ -1297,9 +1297,9 @@ isPlayButtonOpen(){
     blackPixels := 0
     whitePixels := 0
 
-    Loop % 30 {
+    Loop 30 {
         tX := A_Index-1
-        Loop % 30 {
+        Loop 30 {
             tY := A_Index-1
             pixelColor := Gdip_GetPixel(playMap, tX, tY)
             blackPixels += compareColors(pixelColor,0x000000) < 32
@@ -1320,34 +1320,28 @@ isPlayButtonOpen(){
 
 attemptReconnect(failed := 0){
     initialized := 0
-    if (reconnecting && !failed){
+    if (reconnecting && !failed)
         return
-    }
-    if (!options.ReconnectEnabled){
-        stop()
-        return
-    }
+    if (!options.ReconnectEnabled)
+        stop(), return
     reconnecting := 1
     success := 0
     closeRoblox()
     updateStatus("Reconnecting")
     sleep 5000
     Loop 5 {
-        sleep % (A_Index-1)*10000
-        if (options.PrivateServerId && A_Index < 4){
-            try Run % """roblox://placeID=15532962292&linkCode=" options.PrivateServerId """"
-        } else {
-            try Run % """roblox://placeID=15532962292"""
-        }
+        sleep (A_Index-1)*10000
+        if (options.PrivateServerId && A_Index < 4)
+            try Run """roblox://placeID=15532962292&linkCode=" options.PrivateServerId """"
+        else try Run """roblox://placeID=15532962292"""
         Loop 240 {
             rHwnd := GetRobloxHWND()
             if (rHwnd){
-                WinActivate, ahk_id %rHwnd%
+                WinActivate("ahk_id " rHwnd)
                 break
             }
-            if (A_Index == 240){
+            if (A_Index == 240)
                 continue 2
-            }
             Sleep 1000
         }
         updateStatus("Reconnecting, Roblox Opened")
@@ -1362,7 +1356,7 @@ attemptReconnect(failed := 0){
             }
             
             if (valid){
-                MouseMove, % pX + (width/2), % pY + height*0.6
+                MouseMove(pX + (width/2), pY + height*0.6)
                 sleep 300
                 MouseClick
                 break
@@ -1376,11 +1370,11 @@ attemptReconnect(failed := 0){
         updateStatus("Reconnecting, Game Loaded")
         sleep 10000
         getRobloxPos(pX,pY,width,height)
-        MouseMove, % pX + (width*0.6), % pY + (height*0.85)
+        MouseMove(pX + (width*0.6), pY + (height*0.85))
         sleep 300
         MouseClick
         sleep 100
-        MouseMove, % pX + (width*0.35), % pY + (height*0.95)
+        MouseMove(pX + (width*0.35), pY + (height*0.95))
         sleep 300
         MouseClick
         updateStatus("Reconnect Complete")
@@ -1401,7 +1395,7 @@ checkDisconnect(wasChecked := 0){
 		pBMScreen := Gdip_BitmapFromScreen(windowX+(windowWidth/4) "|" windowY+(windowHeight/2) "|" windowWidth/2 "|1")
         matches := 0
         hW := windowWidth/2
-		Loop %hW% {
+		Loop hW {
             matches += (compareColors(Gdip_GetPixelColor(pBMScreen,A_Index-1,0,1),0x393b3d) < 8)
             if (matches >= 128){
                 break
@@ -1424,12 +1418,12 @@ checkDisconnect(wasChecked := 0){
 
 /*
 testPath := mainDir "images\test.png"
-OutputDebug, testPath
+OutputDebug testPath
 pbm := Gdip_LoadImageFromFile(testPath) ; Gdip_BitmapFromScreen("0|0|100|100")
 pbm2 := Gdip_ResizeBitmap(pbm,1500,1500,true)
 Gdip_SaveBitmapToFile(pbm2,"test2.png")
 
-MsgBox, % ocrFromBitmap(pbm2)
+MsgBox(ocrFromBitmap(pbm2))
 ExitApp
 */
 
@@ -1451,7 +1445,7 @@ mainLoop(){
     BRCornerX := TLCornerX + width
     BRCornerY := TLCornerY + height
     statusEffectHeight := Floor((height/1080)*54)
-    WinActivate ahk_id %robloxId%
+    WinActivate("ahk_id " robloxId)
     if (!initialized)
         updateStatus("Initializing"), initialize()
     tMX := width/2
@@ -1500,9 +1494,9 @@ mainLoop(){
         searchForItems()
     }
     /*
-    ;MouseMove, targetX, targetY
-    Gui test1:Color, %color%
-    GuiControl,,TestT,% checkHasObbyBuff(BRCornerX,BRCornerY,statusEffectHeight)
+    ;MouseMove(targetX, targetY)
+    Gui test1:Color, color
+    GuiControl(,TestT,% checkHasObbyBuff(BRCornerX,BRCornerY,statusEffectHeight))
     */
 }
 
@@ -1800,37 +1794,36 @@ global importingSettings := 0
 handleImportSettings(){
     global configPath
 
-    if (importingSettings){
+    if (importingSettings)
         return
-    }
 
-    MsgBox, % 1 + 4096, % "Import Settings", % "To import the settings from a previous version folder of the Macro, please select the ""config.ini"" file located in the previous version's ""settings"" folder when prompted. Press OK to begin."
+    result := MsgBox(1 + 4096, "Import Settings", "To import the settings from a previous version folder of the Macro, please select the ""config.ini"" file located in the previous version's ""settings"" folder when prompted. Press OK to begin.")
 
-    IfMsgBox, Cancel
+    If (result=="Cancel")
         return
     
     importingSettings := 1
 
-    FileSelectFile, targetPath, 3,, Import dolphSol Settings Through a config.ini File, % "Configuration settings (config.ini)"
+    FileSelectFile(targetPath, 3,, "Import dolphSol Settings Through a config.ini File", "Configuration settings (config.ini)"
 
     if (targetPath && RegExMatch(targetPath,"\\config\.ini")){
         if (targetPath != configPath){
-            FileRead, retrieved, %targetPath%
+            FileRead(retrieved, targetPath)
 
             if (!ErrorLevel){
-                FileDelete, %configPath%
-                FileAppend, %retrieved%, %configPath%
+                FileDelete(configPath)
+                FileAppend(retrieved, configPath)
 
                 loadData()
                 updateUIOptions()
                 saveOptions()
 
-                MsgBox, 0,Import Settings,% "Success!"
+                MsgBox(0,"Import Settings", "Success!")
             } else {
-                MsgBox,0,Import Settings Error, % "An error occurred while reading the file, please try again."
+                MsgBox(0,"Import Settings Error", "An error occurred while reading the file, please try again.")
             }
         } else {
-            MsgBox, 0,Import Settings Error, % "Cannot import settings from the current macro!"
+            MsgBox(0,"Import Settings Error", "Cannot import settings from the current macro!")
         }
     }
 
@@ -1844,7 +1837,7 @@ handleWebhookEnableToggle(){
         GuiControlGet, link,,WebhookInput
         if (!validateWebhookLink(link)){
             GuiControl, , WebhookCheckBox,0
-            MsgBox,0,Webhook Link Invalid, % "Invalid webhook link, the webhook option has been disabled."
+            MsgBox(0,"Webhook Link Invalid", "Invalid webhook link, the webhook option has been disabled.")
         }
     }
 }
@@ -1861,22 +1854,21 @@ formatNum(n,digits := 2){
     final := n
     if (digits > cDigits){
         loopCount := digits-cDigits
-        Loop %loopCount% {
-            final := "0" . final
+        Loop loopCount {
+            final := "0" final
         }
     }
     return final
 }
 
 getTimerDisplay(t){
-    return formatNum(Floor(t/86400)) . ":" . formatNum(Floor(Mod(t,86400)/3600)) . ":" . formatNum(Floor(Mod(t,3600)/60)) . ":" . formatNum(Mod(t,60))
+    return formatNum(Floor(t/86400)) ":" formatNum(Floor(Mod(t,86400)/3600)) ":" formatNum(Floor(Mod(t,3600)/60)) ":" formatNum(Mod(t,60))
 }
 
 updateUI(){
     ; per 1s
-    if (running){
+    if (running)
         options.RunTime += 1
-    }
 
     statText := ""
     for i,v in statDisplayInfo {
@@ -1887,7 +1879,7 @@ updateUI(){
         if (i = "RunTime"){
             value := getTimerDisplay(value)
         }
-        statText .= v . ": " . value
+        statText .= v ": " value
     }
     GuiControl, , StatsDisplay, % statText
 }
@@ -1933,14 +1925,10 @@ startAutoEquipSelection(){
         return
     }
 
-    MsgBox, % 1 + 4096, Begin Auto Equip Selection, % "Once you press OK, please click on the inventory slot that you would like to automatically equip.`n`nPlease ensure that your storage is open upon pressing OK. Press Cancel if it is not open yet."
+    result := MsgBox(1 + 4096, "Begin Auto Equip Selection", "Once you press OK, please click on the inventory slot that you would like to automatically equip.`n`nPlease ensure that your storage is open upon pressing OK. Press Cancel if it is not open yet.")
 
-    IfMsgBox, Cancel
+    if (result=="Cancel" || macroStarted)
         return
-    
-    if (macroStarted){
-        return
-    }
 
     selectingAutoEquip := 1
 
@@ -1959,9 +1947,8 @@ startAutoEquipSelection(){
 }
 
 cancelAutoEquipSelection(){
-    if (!selectingAutoEquip) {
+    if (!selectingAutoEquip)
         return
-    }
     Gui Dimmer:Destroy
     Gui DimmerTop:Destroy
     Gui mainUI:Show
@@ -1969,12 +1956,11 @@ cancelAutoEquipSelection(){
 }
 
 completeAutoEquipSelection(){
-    if (!selectingAutoEquip){
+    if (!selectingAutoEquip)
         return
-    }
     applyNewUIOptions()
 
-    MouseGetPos, mouseX,mouseY
+    MouseGetPos(mouseX,mouseY)
     uv := getAspectRatioUVFromPosition(mouseX,mouseY,storageAspectRatio)
     options.AutoEquipX := uv[1]
     options.AutoEquipY := uv[2]
@@ -1982,22 +1968,20 @@ completeAutoEquipSelection(){
     saveOptions()
     cancelAutoEquipSelection()
 
-    MsgBox, 0,Auto Equip Selection,Success!
+    MsgBox(0,"Auto Equip Selection","Success"!)
 }
 
 handleLClick(){
-    if (selectingAutoEquip){
+    if (selectingAutoEquip)
         completeAutoEquipSelection()
-    }
 }
 
 handleRClick(){
-    if (selectingAutoEquip){
+    if (selectingAutoEquip)
         cancelAutoEquipSelection()
-    }
 }
 
-SetTimer, SecondTick, 1000
+SetTimer SecondTick, 1000
 
 startMacro(){
     if (!canStart || macroStarted)
@@ -2014,17 +1998,17 @@ startMacro(){
     Gui, mainUI:+LastFoundExist
     WinSetTitle, % "dolphSol Macro " version " (Running)"
 
-    Run, % """" . A_AhkPath . """ """ mainDir . "lib\status.ahk"""
+    Run """" A_AhkPath """ """ mainDir "lib\status.ahk"""
 
     if (options.StatusBarEnabled)
-        Gui statusBar:Show, % "w220 h25 x" (A_ScreenWidth-300) " y50", dolphSol Status
+        Gui statusBar:Show, "w220 h25 x" (A_ScreenWidth-300) " y50", dolphSol Status
     
     robloxId := GetRobloxHWND()
     if (!robloxId)
         attemptReconnect()
 
     running:=1
-    WinActivate, ahk_id %robloxId%
+    WinActivate("ahk_id " robloxId)
     while running {
         try mainLoop()
         catch e
@@ -2038,7 +2022,7 @@ startMacro(){
 if (!options.FirstTime){
     options.FirstTime := 1
     saveOptions()
-    MsgBox, 0,dolphSol Macro - Welcome, % "Welcome to dolphSol macro!`n`nIf this is your first time here, make sure to go through all of the tabs to make sure your settings are right.`n`nIf you are here from an update, remember that you can import all of your previous settings in the Settings menu.`n`nMake sure join the Discord server and check the GitHub page for the community and future updates, which can both be found in the Credits page. (Discord link is also in the bottom right corner)"
+    MsgBox(0,"dolphSol Macro - Welcome", "Welcome to dolphSol macro!`n`nIf this is your first time here, make sure to go through all of the tabs to make sure your settings are right.`n`nIf you are here from an update, remember that you can import all of your previous settings in the Settings menu.`n`nMake sure join the Discord server and check the GitHub page for the community and future updates, which can both be found in the Credits page. (Discord link is also in the bottom right corner)")
 }
 
 if (!options.WasRunning){
@@ -2058,7 +2042,7 @@ StartClick:
     return
 
 PauseClick:
-    MsgBox, 0,% "Pause",% "Please note that the pause feature isn't very stable currently. It is suggested to stop instead."
+    MsgBox(0,"Pause","Please note that the pause feature isn't very stable currently. It is suggested to stop instead.")
     Pause
     return
 
@@ -2072,7 +2056,7 @@ AutoEquipSlotSelectClick:
     return
 
 DiscordServerClick:
-    Run % "https://discord.gg/DYUqwJchuV"
+    Run "https://discord.gg/DYUqwJchuV"
     return
 
 EnableWebhookToggle:
@@ -2087,7 +2071,7 @@ WebhookRollImageCheckBoxClick:
     Gui mainUI:Default
     GuiControlGet, v,, WebhookRollImageCheckBox
     if (v){
-        MsgBox, 0, Aura Roll Image Warning, % "Warning: Currently, the aura image display for the webhook is fairly unstable, and may cause random delays in webhook sends due to image loading. Enable at your own risk."
+        MsgBox(0, "Aura Roll Image Warning", "Warning: Currently, the aura image display for the webhook is fairly unstable, and may cause random delays in webhook sends due to image loading. Enable at your own risk.")
     }
     return
 
@@ -2095,7 +2079,7 @@ ArcaneCheckBoxClick:
     Gui mainUI:Default
     GuiControlGet,v,,ArcaneCheckBox
     if (v){
-        MsgBox, 0, Arcane Teleport Notice, % "With the Arcane Teleport option enabled, please ensure that you are auto-equipping any type of Arcane aura at ALL TIMES, otherwise your paths will break.`n`nRemember: It is preferred to select a slot with Arcane in the non-scrolled Aura Storage state (not scrolled down), as reconnecting will reset the scroll upon rejoin, possibly causing you to select a different aura."
+        MsgBox(0, "Arcane Teleport Notice", "With the Arcane Teleport option enabled, please ensure that you are auto-equipping any type of Arcane aura at ALL TIMES, otherwise your paths will break.`n`nRemember: It is preferred to select a slot with Arcane in the non-scrolled Aura Storage state (not scrolled down), as reconnecting will reset the scroll upon rejoin, possibly causing you to select a different aura.")
     }
     return
 
@@ -2128,29 +2112,29 @@ Supporters (Donations)
 
 Thank you to everyone who currently supports and uses the macro! You guys are amazing!
 )
-    MsgBox, 0, More Credits, % creditText
+    MsgBox(0, "More Credits", creditText)
     return
 
 ; help buttons
 
 ObbyHelpClick:
-    MsgBox, 0, Obby, % "Section for attempting to complete the Obby on the map for the +30% luck buff every 2 minutes. If you have the VIP Gamepass, make sure to enable it in Settings.`n`nCheck For Obby Buff Effect - Checks your status effects upon completing the obby and attempts to find the buff. If it is missing, the macro will retry the obby one more time. Disable this if your macro keeps retrying the obby after completing it. The ObbyCompletes stat will only increase if this check is enabled.`n`nPLEASE NOTE: The macro's obby completion ability HIGHLY depends on a stable frame-rate, and will likely fail from any frame freezes. If your macro is unable to complete the obby at all, it is best to disable this option."
+    MsgBox(0, "Obby", "Section for attempting to complete the Obby on the map for the +30% luck buff every 2 minutes. If you have the VIP Gamepass, make sure to enable it in Settings.`n`nCheck For Obby Buff Effect - Checks your status effects upon completing the obby and attempts to find the buff. If it is missing, the macro will retry the obby one more time. Disable this if your macro keeps retrying the obby after completing it. The ObbyCompletes stat will only increase if this check is enabled.`n`nPLEASE NOTE: The macro's obby completion ability HIGHLY depends on a stable frame-rate, and will likely fail from any frame freezes. If your macro is unable to complete the obby at all, it is best to disable this option.")
     return
 
 AutoEquipHelpClick:
-    MsgBox, 0, Auto Equip, % "Section for automatically equipping a specified aura every macro round. This is important for equipping auras without walk animations, which may interfere with the macro. This defaults to your first storage slot if not selected. Enabling this will close your chat window due to it possibly getting in the way of the storage button.`n`nUse the Select Storage Slot button to select a slot in your Aura Storage to automatically equip. Right click when selecting to cancel.`n`nThis feature is HIGHLY RECOMMENDED to be used on a non-animation aura for best optimization."
+    MsgBox(0, "Auto Equip", "Section for automatically equipping a specified aura every macro round. This is important for equipping auras without walk animations, which may interfere with the macro. This defaults to your first storage slot if not selected. Enabling this will close your chat window due to it possibly getting in the way of the storage button.`n`nUse the Select Storage Slot button to select a slot in your Aura Storage to automatically equip. Right click when selecting to cancel.`n`nThis feature is HIGHLY RECOMMENDED to be used on a non-animation aura for best optimization.")
     return
 
 CollectHelpClick:
-    MsgBox, 0, Item Collecting, % "Section for automatically collecting naturally spawned items around the map. Enabling this will have the macro check the selected spots every loop after doing the obby (if enabled and ready).`n`nYou can also specify which spots to collect from. If a spot is disabled, the macro will not grab any items from the spot. Please note that the macro always takes the same path, it just won't collect from a spot if it's disabled. This feature is useful if you are sharing a server with a friend, and split the spots with them.`n`nItem Spots:`n 1 - Left of the Leaderboards`n 2 - Bottom left edge of the Map`n 3 - Under a tree next to the House`n 4 - Inside the House`n 5 - Under the tree next to Jake's Shop`n 6 - Under the tree next to the Mountain`n 7 - On top of the Hill with the Cave"
+    MsgBox(0, "Item Collecting", "Section for automatically collecting naturally spawned items around the map. Enabling this will have the macro check the selected spots every loop after doing the obby (if enabled and ready).`n`nYou can also specify which spots to collect from. If a spot is disabled, the macro will not grab any items from the spot. Please note that the macro always takes the same path, it just won't collect from a spot if it's disabled. This feature is useful if you are sharing a server with a friend, and split the spots with them.`n`nItem Spots:`n 1 - Left of the Leaderboards`n 2 - Bottom left edge of the Map`n 3 - Under a tree next to the House`n 4 - Inside the House`n 5 - Under the tree next to Jake's Shop`n 6 - Under the tree next to the Mountain`n 7 - On top of the Hill with the Cave")
     return
 
 WebhookHelpClick:
-    MsgBox, 0, Discord Webhook, % "Section for connecting a Discord Webhook to have status messages displayed in a target Discord Channel. Enable this option by entering a valid Discord Webhook link.`n`nTo create a webhook, you must have Administrator permissions in a server (preferably your own, separate server). Go to your target channel, then configure it. Go to Integrations, and create a Webhook in the Webhooks Section. After naming it whatever you like, copy the Webhook URL, then paste it into the macro. Now you can enable the Discord Webhook option!`n`nRequires a valid Webhook URL to enable.`n`nImportant events only - The webhook will only send important events such as disconnects, rolls, and initialization, instead of all of the obby/collecting/crafting ones.`n`nYou can provide your Discord ID here as well to be pinged for rolling a rarity group or higher when detected by the system. You can select the minimum notification/send rarity in the Roll Detection system.`n`nHourly Inventory Screenshots - Screenshots of both your Aura Storage and Item Inventory are sent to your webhook."
+    MsgBox(0, "Discord Webhook", "Section for connecting a Discord Webhook to have status messages displayed in a target Discord Channel. Enable this option by entering a valid Discord Webhook link.`n`nTo create a webhook, you must have Administrator permissions in a server (preferably your own, separate server). Go to your target channel, then configure it. Go to Integrations, and create a Webhook in the Webhooks Section. After naming it whatever you like, copy the Webhook URL, then paste it into the macro. Now you can enable the Discord Webhook option!`n`nRequires a valid Webhook URL to enable.`n`nImportant events only - The webhook will only send important events such as disconnects, rolls, and initialization, instead of all of the obby/collecting/crafting ones.`n`nYou can provide your Discord ID here as well to be pinged for rolling a rarity group or higher when detected by the system. You can select the minimum notification/send rarity in the Roll Detection system.`n`nHourly Inventory Screenshots - Screenshots of both your Aura Storage and Item Inventory are sent to your webhook.")
     return
 
 RollDetectionHelpClick:
-    MsgBox, 0, Roll Detection, % "Section for detecting rolled auras through the registered star color (if 10k+). Any 10k+ auras that can be sent will be sent to the webhook, with the option to ping if the rarity is above the minimum.`n`nFor minimum settings, the number determines the lowest possible rarity the webhook will send/ping for. Values of 0 will disable the option completely. Values under 10,000 will toggle all 1k+ rolls, due to them being near undetectable.`n`nAura Images can be toggled to show the wiki-based images of your rolled auras in the webhook. WARNING: After some testing, this has proven to show some lag, leading to some send delay issues. Use at your own risk!"
+    MsgBox(0, "Roll Detection", "Section for detecting rolled auras through the registered star color (if 10k+). Any 10k+ auras that can be sent will be sent to the webhook, with the option to ping if the rarity is above the minimum.`n`nFor minimum settings, the number determines the lowest possible rarity the webhook will send/ping for. Values of 0 will disable the option completely. Values under 10,000 will toggle all 1k+ rolls, due to them being near undetectable.`n`nAura Images can be toggled to show the wiki-based images of your rolled auras in the webhook. WARNING: After some testing, this has proven to show some lag, leading to some send delay issues. Use at your own risk!")
     return
 
 f1::startMacro()
