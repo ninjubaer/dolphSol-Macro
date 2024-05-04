@@ -1,7 +1,7 @@
 ﻿/************************************************************************
  * @description DolphSol Macro GUI Library
  * @file UI.ahk
- * @author ninju | .ninju.
+ * @author ninju | .ninju. + moksh | sir.moxxi | sanji 
  * @date 2024/05/04
  * @version 0.0.1
  ***********************************************************************/
@@ -17,10 +17,11 @@ if A_LineFile == A_ScriptFullPath {
 	#Include Gdip_All.ahk
 	ptoken := Gdip_Startup()
 
-	colorTheme := "classic"
+	colorTheme := "OG"
 	colorThemes := {
 		;? Task/SideBar, Background, Text, Dark
 		classic: ["23272E", "1e2227", "858c98", "1d1f23"],
+		OG: ["878787", "dcdcdc", "000000", "#323232"],
 		cozy: ["5A3A31", "635B53", "C4BBAF", "31231E"],
 		cyan: ["342C2E", "433E40", "59B5EE", "191E1C"],
 		ocean: ["191923", "63768d", "C8E6F9", "101018"],
@@ -50,9 +51,19 @@ if A_LineFile == A_ScriptFullPath {
 			.AddText((A_Index-1)*57+68,181,unset,unset,"s12",A_Index)
 		;; Crafting Tab
 		MainGui.UseTab("Crafting")
-		.AddGroupBox(10, 40, 215, 75, "Item Crafting", 90)
-		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Automatic Item Crafting")
-		.AddSwitch(25, 85, 1, (*) => "", 1).AddText(53,86,unset,unset,"s12","Gilded Coins")
+		;; Item Crafting
+		.AddGroupBox(10, 40, 225, 170, "Item Crafting", 80)
+		.AddSwitch(25, 60, 1, (*) => "", 0).AddText(53,61,unset,unset,"s12","Auto Item Crafting")
+		.AddGroupBox(20, 90, 200, 110, "Crafting Options", 100)
+		.AddSwitch(35, 110, 50, (*) => "", 1).AddText(65,110,unset,unset,"s12","Gilded Coins")
+		;? idk how to add a scroller keep it in the crafting options group box tho, just to be clean 
+		;? dolph could add more stuff to craft so its best to have it near the bottom to begin with
+
+		;; Potion crafting
+		.AddGroupBox(245, 40, 205, 170, "Potion Crafting", 90)
+		.AddSwitch(265, 60, 1, (*) => "", 0).AddText(295,61,unset,unset,"s12","Auto Potion Crafting")
+		.AddGroupBox(258, 90, 180, 110, "Crafting Slots", 80)
+
 		;; No Tab
 		MainGui.UseTab(0)
 		.AddButton(10, 222, 70, 20, "Start", (*) => MsgBox("start"), "StartButton")
