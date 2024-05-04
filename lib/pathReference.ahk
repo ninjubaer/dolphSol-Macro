@@ -4,7 +4,7 @@ SetWorkingDir, %A_ScriptDir%
 ; Reference script for paths
 
 getINIData(path){
-    FileRead, retrieved, %path%
+    FileRead(retrieved, path)
 
     retrievedData := {}
     readingPoint := 0
@@ -24,7 +24,7 @@ getINIData(path){
             }
         }
     } else {
-        MsgBox, An error occurred while reading %path% data, please review the file.
+        MsgBox("An error occurred while reading " path " data, please review the file.")
         return
     }
     return retrievedData
@@ -38,7 +38,7 @@ getWalkTime(d){
 }
 
 walkSleep(d){
-    sleep % getWalkTime(d)
+    sleep getWalkTime(d)
 }
 
 press(k, k2:="", duration := 50) {
@@ -122,9 +122,9 @@ compareColors(color1, color2) ; determines how far apart 2 colors are
 
 closeChat(){
     getRobloxPos(pX,pY,width,height)
-    PixelGetColor, chatCheck, % pX + 75, % pY + 12, RGB
+    PixelGetColor chatCheck, pX + 75, pY + 12, RGB
     if (compareColors(chatCheck,0xffffff) < 16){ ; is chat open??
-        MouseMove, % pX + 75, % pY + 12
+        MouseMove pX + 75, pY + 12
         sleep 300
         MouseClick
         sleep 100
@@ -144,12 +144,12 @@ getMenuButtonPosition(num, ByRef posX := "", ByRef posY := ""){ ; num is 1-7, 1 
     posX := startPos[1]
     posY := startPos[2] + (menuBarButtonSize+menuBarVSpacing)*(num-1)
 
-    MouseMove, % posX, % posY
+    MouseMove posX, posY
 }
 
 clickMenuButton(num){
     getMenuButtonPosition(num, posX, posY)
-    MouseMove, posX, posY
+    MouseMove posX, posY
     sleep 200
     MouseClick
 }
@@ -161,7 +161,7 @@ alignCamera(){
     clickMenuButton(2)
     sleep 500
     getRobloxPos(rX,rY,rW,rH)
-    MouseMove, % rX + rW*0.15, % rY + 44 + rH*0.05 + options.BackOffset
+    MouseMove rX + rW*0.15, rY + 44 + rH*0.05 + options.BackOffset
     sleep 200
     MouseClick
     sleep 500
@@ -173,7 +173,7 @@ sendKey(key, type = ""){
  azertyKey := azertyReplace[key]
  key := options.AzertyLayout && azertyKey ? azertyKey : key
  
- Send {%key% %type%}
+ Send "{" key " " type "}"
 }
 
 arcaneTeleport(){

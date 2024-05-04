@@ -202,7 +202,7 @@ getINIData(path){
 
 writeToINI(path,object,header){
     if (!FileExist(path)){
-        MsgBox, You are missing the file: %path%, please ensure that it is in the correct location.
+        MsgBox("You are missing the file: " path ", please ensure that it is in the correct location.")
         return
     }
 
@@ -212,8 +212,8 @@ writeToINI(path,object,header){
         formatted .= i . "=" . v . "`r`n"
     }
 
-    FileDelete, %path%
-    FileAppend, %formatted%, %path%
+    FileDelete(path)
+    FileAppend(formatted, path)
 }
 
 ; data loading
@@ -221,7 +221,7 @@ loadData(){
     global configPath
     savedRetrieve := getINIData(configPath)
     if (!savedRetrieve){
-        MsgBox, Unable to retrieve config data, your settings have been set to their defaults.
+        MsgBox("Unable to retrieve config data, your settings have been set to their defaults.")
         savedRetrieve := {}
     }
     newOptions := {}
@@ -243,7 +243,7 @@ saveOptions(){
 saveOptions()
 
 updateYesClicked(){
-    Run % (sData.versionLink ? sData.versionLink : "https://github.com/BuilderDolphin/dolphSol-Macro/releases/latest")
+    Run (sData.versionLink ? sData.versionLink : "https://github.com/BuilderDolphin/dolphSol-Macro/releases/latest")
     ExitApp
 }
 
@@ -258,13 +258,13 @@ updateStaticData(){
 
     If (WinHttp.Status = 200) {
         content := WinHttp.ResponseText
-        FileDelete, staticData.ini
-        FileAppend, %content%, staticData.ini
+        FileDelete(staticData.ini)
+        FileAppend(content, staticData.ini)
     }
 
     sData := getINIData("staticData.ini")
     if (sData.latestVersion != version){
-        MsgBox, 4, % "New Update Available", % "A new update is available! Would you like to head to the GitHub page to update your macro?" . (sData.updateNotes ? ("`n`nUpdate Notes:`n" . sData.updateNotes) : "")
+        MsgBox(4, "New Update Available", "A new update is available! Would you like to head to the GitHub page to update your macro?" (sData.updateNotes ? ("`n`nUpdate Notes:`n" sData.updateNotes) : ""))
         
         IfMsgBox Yes
             updateYesClicked()
@@ -412,7 +412,7 @@ HasVal(haystack, needle) {
     for index, value in haystack
         if (value = needle)
             return index
-    if !(IsObject(haystack))
+    if (!IsObject(haystack))
         throw Exception("Bad haystack!", -1, haystack)
     return 0
 }
@@ -420,26 +420,22 @@ HasVal(haystack, needle) {
 global possibleDowns := ["w","a","s","d","Space","Enter","Esc","r"]
 
 liftKeys(){
-    for i,v in possibleDowns {
-        Send {%v% Up}
-    }
+    for i,v in possibleDowns
+        Send "{" v " Up}"
 }
 
 stop(terminate := 0) {
-    if (running){
+    if (running)
         updateStatus("Macro Stopped")
-    }
 
-    if (terminate){
+    if (terminate)
         options.WasRunning := 0
-    }
 
-    DetectHiddenWindows, On
-    WinClose, % mainDir . "lib\status.ahk"
+    DetectHiddenWindows 1
+    WinClose(mainDir "lib\status.ahk")
 
-    for i,v in pathsRunning {
-        WinClose, % v
-    }
+    for i,v in pathsRunning
+        WinClose(v)
 
     liftKeys()
 
@@ -447,7 +443,7 @@ stop(terminate := 0) {
     saveOptions()
 
     if (terminate){
-        OutputDebug, Terminated
+        OutputDebug "Terminated"
         ExitApp
     }
 }
@@ -461,9 +457,9 @@ handlePause(){
         saveOptions()
         updateUIOptions()
 
-        WinActivate, ahk_id %robloxId%
+        WinActivate("ahk_id " robloxId)
         for i,v in pauseDowns {
-            Send {%v% Down}
+            Send "{" v " Down}"
         }
     } else {
         pauseDowns := []
@@ -471,7 +467,7 @@ handlePause(){
             state := GetKeyState(v)
             if (state){
                 pauseDowns.Push(v)
-                Send {%v% Up}
+                Send "{" v " Up}"
             }
         }
         updateUIOptions()
@@ -532,26 +528,24 @@ initialize()
 
 resetZoom(){
     Loop 2 {
-        if (checkInvOpen()){
+        if (checkInvOpen())
             clickMenuButton(1)
-        } else {
-            break
-        }
+        else break
         sleep 400
     }
 
     getRobloxPos(pX,pY,width,height)
-    MouseMove, % pX + width*0.5, % pY + height*0.5
+    MouseMove pX + width*0.5, pY + height*0.5
 
     sleep 300
     MouseClick
     sleep 250
     Loop 20 {
-        Click, WheelUp
+        Click "WheelUp"
         sleep 50
     }
     Loop 10 {
-        Click, WheelDown
+        Click "WheelDown"
         sleep 100
     }
 }
@@ -566,7 +560,7 @@ alignCamera(){
     clickMenuButton(2)
     sleep 500
     getRobloxPos(rX,rY,rW,rH)
-    MouseMove, % rX + rW*0.15, % rY + 44 + rH*0.05 + options.BackOffset
+    MouseMove rX + rW*0.15, rY + 44 + rH*0.05 + options.BackOffset
     sleep 200
     MouseClick
     sleep 500
@@ -623,17 +617,17 @@ collect(num){
 
 runPath(pathName,voidPoints,noCenter = 0){
     try {
-        targetDir := pathDir . pathName . ".ahk"
+        targetDir := pathDir pathName ".ahk"
         if (!FileExist(targetDir)){
-            MsgBox 0, "Error", "Path file: " targetDir " does not exist."
+            MsgBox(0, "Error", "Path file: " targetDir " does not exist.")
             return
         }
         if (HasVal(pathsRunning,targetDir))
             return
         pathsRunning.Push(targetDir)
         
-        DetectHiddenWindows, On
-        Run """" . A_AhkPath . """ """ . targetDir . """"
+        DetectHiddenWindows 1
+        Run """" A_AhkPath """ """ targetDir """"
 
         stopped := 0
 
@@ -663,10 +657,10 @@ runPath(pathName,voidPoints,noCenter = 0){
 
             blackCorners := 0
             for i,point in scanPoints {
-                PixelGetColor, pColor, % point[1], % point[2], RGB
+                PixelGetColor, pColor, point[1], point[2], RGB
                 blackCorners += compareColors(pColor,0x000000) < 8
             }
-            PixelGetColor, pColor, % rX+width*0.5, % rY+height*0.5, RGB
+            PixelGetColor, pColor, rX+width*0.5, rY+height*0.5, RGB
             centerBlack := compareColors(pColor,0x000000) < 8
             if (blackCorners = 3 && centerBlack){
                 if (!voidCooldown){
@@ -683,7 +677,7 @@ runPath(pathName,voidPoints,noCenter = 0){
         }
 
         if (stopped){
-            WinClose, % targetDir
+            WinClose(targetDir)
             isSpawnCentered := 0
             atSpawn := 1
         } else if (!noCenter) {
@@ -692,7 +686,7 @@ runPath(pathName,voidPoints,noCenter = 0){
         liftKeys()
         pathsRunning.Remove(HasVal(pathsRunning,targetDir))
     } catch e {
-        MsgBox, 0,Path Error,% "An error occurred when running path: " . pathDir . "`n:" . e
+        MsgBox(0,"Path Error", "An error occurred when running path: " pathDir "`n:" e)
     }
 }
 
@@ -783,9 +777,9 @@ walkToPotionCrafting(){
 
 closeChat(){
     getRobloxPos(pX,pY,width,height)
-    PixelGetColor, chatCheck, % pX + 75, % pY + 12, RGB
+    PixelGetColor(chatCheck, pX + 75, pY + 12, RGB)
     if (compareColors(chatCheck,0xffffff) < 16){ ; is chat open??
-        MouseMove, % pX + 75, % pY + 12
+        MouseMove(pX + 75, pY + 12)
         sleep 300
         MouseClick
         sleep 100
@@ -794,7 +788,7 @@ closeChat(){
 
 checkInvOpen(){
     checkPos := getPositionFromAspectRatioUV(0.861357, 0.494592,storageAspectRatio)
-    PixelGetColor, checkC, % checkPos[1], % checkPos[2], RGB
+    PixelGetColor checkC, checkPos[1], checkPos[2], RGB
     alreadyOpen := compareColors(checkC,0xffffff) < 8
     return alreadyOpen
 }
@@ -808,7 +802,7 @@ mouseActions(){
 
     openP := getPositionFromAspectRatioUV(0.718,0.689,599/1015)
     openP2 := getPositionFromAspectRatioUV(0.718,0.689,1135/1015)
-    MouseMove, % openP[1], % openP2[2]
+    MouseMove(openP[1], openP2[2])
     sleep 200
     MouseClick
     sleep 200
@@ -818,17 +812,16 @@ mouseActions(){
         closeChat()
         alreadyOpen := checkInvOpen()
 
-        if (!alreadyOpen){
+        if (!alreadyOpen)
             clickMenuButton(1)
-        }
         sleep 100
         sPos := getPositionFromAspectRatioUV(options.AutoEquipX,options.AutoEquipY,storageAspectRatio)
-        MouseMove, % sPos[1], % sPos[2]
+        MouseMove(sPos[1], sPos[2])
         sleep 300
         MouseClick
         sleep 100
         ePos := getPositionFromAspectRatioUV(storageEquipUV[1],storageEquipUV[2],storageAspectRatio)
-        MouseMove, % ePos[1], % ePos[2]
+        MouseMove(ePos[1], ePos[2])
         sleep 300
         MouseClick
         sleep 100
@@ -848,20 +841,20 @@ mouseActions(){
             Send {f}
             sleep 200
         }
-        MouseMove, 2300,800
+        MouseMove(2300,800)
         sleep 300
         MouseClick
         sleep 250
     }
 
-    MouseMove, % pX + width*0.5, % pY + height*0.5
+    MouseMove(pX + width*0.5, pY + height*0.5)
     sleep 300
     MouseClick
     sleep 250
 }
 
 isFullscreen() {
-	WinGetPos,,, w, h, Roblox
+	WinGetPos(,, w, h, Roblox)
 	return (w = A_ScreenWidth && h = A_ScreenHeight)
 }
 
@@ -938,7 +931,7 @@ spawnCheck(){ ; not in use
     prev := 0
     greatestDiff := 0
     cat := 0
-    Loop %distance%
+    Loop distance
     {
         c := Gdip_GetPixelColor(bitMap,A_Index-1,0,1)
         if (!prev){
@@ -991,12 +984,12 @@ getMenuButtonPosition(num, ByRef posX := "", ByRef posY := ""){ ; num is 1-7, 1 
     posX := startPos[1]
     posY := startPos[2] + (menuBarButtonSize+menuBarVSpacing)*(num-1)
 
-    MouseMove, % posX, % posY
+    MouseMove(posX, posY)
 }
 
 clickMenuButton(num){
     getMenuButtonPosition(num, posX, posY)
-    MouseMove, posX, posY
+    MouseMove(posX, posY)
     sleep 200
     MouseClick
 }
@@ -1009,11 +1002,9 @@ getAspectRatioSize(ratio, width, height){
     fH := width*ratio
     fW := height*(1/ratio)
 
-    if (height >= fH){
+    if (height >= fH)
         fW := width
-    } else {
-        fH := height
-    }
+    else fH := height
 
     return [Floor(fW+0.5), Floor(fH+0.5)]
 }
@@ -1046,9 +1037,9 @@ getAspectRatioUVFromPosition(x,y,aspectRatio){
 
 /*
 sleep 10000
-MouseGetPos, mx,my
+MouseGetPos(mx,my)
 p := getAspectRatioUVFromPosition(mx,my,storageAspectRatio)
-OutputDebug, % p[1] " " p[2]
+OutputDebug(p[1] " " p[2])
 */
 
 clickCraftingSlot(num,isPotionSlot := 0){
@@ -1067,12 +1058,12 @@ clickCraftingSlot(num,isPotionSlot := 0){
         slotHeight := (width/1920)*129
     }
 
-    MouseMove, % scrollCenter, % scrollStartY-2
+    MouseMove(scrollCenter, scrollStartY-2)
     sleep 250
-    Click, WheelDown ; in case res upd
+    Click "WheelDown" ; in case res upd
     sleep 100
     Loop 10 {
-        Click, WheelUp
+        Click "WheelUp"
         sleep 75
     }
 
@@ -1082,26 +1073,25 @@ clickCraftingSlot(num,isPotionSlot := 0){
         if (num = 13 && !isPotionSlot){
             rCount += 5
         }
-        Loop %rCount% {
-            Click, WheelDown
+        Loop rCount {
+            Click "WheelDown"
             sleep 200
         }
-        MouseMove, % scrollCenter, % scrollStartY + slotHeight*(fittingSlots-1) + rCount
+        MouseMove(scrollCenter, scrollStartY + slotHeight*(fittingSlots-1) + rCount)
     } else {
-        MouseMove, % scrollCenter, % scrollStartY + slotHeight*(num-1)
+        MouseMove(scrollCenter, scrollStartY + slotHeight*(num-1))
     }
 
     sleep 300
     MouseClick
     sleep 200
-    MouseGetPos, mouseX,mouseY
-    MouseMove, % mouseX + width/4, % mouseY
+    MouseGetPos(mouseX,mouseY)
+    MouseMove(mouseX + width/4, mouseY)
 }
 
 craftingClickAdd(totalSlots,maxes := 0,isGear := 0){
-    if (!maxes){
+    if (!maxes)
         maxes := []
-    }
 
     getRobloxPos(rX,rY,width,height)
 
@@ -1118,31 +1108,29 @@ craftingClickAdd(totalSlots,maxes := 0,isGear := 0){
     }
 
     slotI := 1
-    Loop %totalSlots% {
+    Loop totalSlots {
         clickCount := maxes[slotI]
-        MouseMove, % (clickCount == 1) ? startX : startXAmt, % startY + slotSize*(A_Index-1)
+        MouseMove((clickCount == 1) ? startX : startXAmt, startY + slotSize*(A_Index-1))
         sleep 200
-        MouseClick, WheelUp
+        MouseClick "WheelUp"
         sleep 200
         if (clickCount > 1){
             MouseClick
             sleep 200
             clickCount := clickCount ? clickCount : 100
-            Send % clickCount
+            Send clickCount
             sleep 200
         }
-        MouseMove, % startX, % startY + slotSize*(A_Index-1)
+        MouseMove(startX, startY + slotSize*(A_Index-1))
         sleep 200
         slotI += 1
         MouseClick
         sleep 200
     }
 
-    if (isGear){
-        MouseMove, % 0.43*width + rX, % 0.635*height + rY
-    } else {
-        MouseMove, % 0.46*width + rX, % 0.63*height + rY
-    }
+    if (isGear)
+        MouseMove(0.43*width + rX, 0.635*height + rY)
+    else MouseMove(0.46*width + rX, 0.63*height + rY)
     sleep 250
     MouseClick
 }
@@ -1169,13 +1157,13 @@ handleCrafting(){
                 sleep 200
                 clickCraftingSlot(info.subSlot,1)
                 sleep 200
-                Loop %loopCount% {
+                Loop loopCount {
                     craftingClickAdd(info.addSlots,info.maxes)
                     sleep 200
                 }
             }
         }
-        MouseMove, % rX + rW*0.175, % rY + rH*0.05
+        MouseMove(rX + rW*0.175, rY + rH*0.05)
         sleep 200
         MouseClick
         sleep 500
@@ -1190,7 +1178,7 @@ handleCrafting(){
         sleep 4500
         openP := getPositionFromAspectRatioUV(-0.718,0.689,599/1015)
         openP2 := getPositionFromAspectRatioUV(-0.718,0.689,1135/1015)
-        MouseMove, % openP[1], % openP2[2]
+        MouseMove(openP[1], openP2[2])
         sleep 200
         MouseClick
         sleep 500
@@ -1200,12 +1188,12 @@ handleCrafting(){
             loopCount := info.attempts + Floor(info.addedAttempts*options.CraftingInterval)
             clickCraftingSlot(info.slot)
             sleep 200
-            Loop %loopCount% {
+            Loop loopCount {
                 craftingClickAdd(info.addSlots,info.maxes,1)
                 sleep 200
             }
         }
-        MouseMove, % rX + rW*0.175, % rY + rH*0.05
+        MouseMove(rX + rW*0.175, rY + rH*0.05)
         sleep 200
         MouseClick
         sleep 500
