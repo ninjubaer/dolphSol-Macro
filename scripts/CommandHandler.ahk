@@ -22,8 +22,3 @@ commandHandler(command) {
     (params := StrSplit(SubStr(command["content"],StrLen(commandPrefix)+1), " ")).length ? "" : params := [""]
     ID := command["id"], (cmd := fetchCommand(params[1])) ? (cmd.function).Call(command, params) :""
 }
-
-
-loop
-    if (cmd := Discord.getMessages(1207367046313283596)) is Object and cmd["content"] && SubStr(cmd["content"], 1,1) == commandPrefix
-        commandHandler(cmd)

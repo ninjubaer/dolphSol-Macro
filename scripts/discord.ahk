@@ -10,11 +10,11 @@
     ),,0x1010
     ExitApp()
 } */
-BotToken := A_Args[1]
-commandPrefix := A_Args[2]
-ChannelID := A_Args[3]
-
 SetWorkingDir A_ScriptDir '\..\'
+BotToken := IniRead(".\settings\config.ini", "Options", "BotToken")
+commandPrefix := "?"
+ChannelID := "1207367046313283596"
+
 #Include CommandHandler.ahk
 #Include %A_ScriptDir%\..\lib
 #Include Gdip_All.ahk
