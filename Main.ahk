@@ -57,6 +57,15 @@ global ssPath := "ss.jpg"
 global pathDir := mainDir "paths\"
 global imgDir := mainDir "images\"
 
+Fwd:="sc011" ; w
+Back:="sc01f" ; s
+Left:="sc01e" ; a
+Right:="sc020" ; d
+SC_Esc:="sc001" ; Esc
+SC_Enter:="sc01c" ; Enter
+LShift:="sc02a" ; LShift
+Space:="sc039" ; Space
+
 configHeader := "; dolphSol Settings`n;   Do not put spaces between equals`n;   Additions may break this file and the macro overall, please be cautious`n;   If you mess up this file, clear it entirely and restart the macro`n`n[Options]`r`n"
 
 global potionIndex := {0:"None"
@@ -627,7 +636,19 @@ runPath(pathName,voidPoints,noCenter = 0){
         pathsRunning.Push(targetDir)
         
         DetectHiddenWindows 1
-        Run """" A_AhkPath """ """ targetDir """"
+        movement := 
+        (
+        'Walk(n, key, key2?) => Send("{" key " down}" (isSet(key2) && key2 ? "{" key2 " down}" : "" ), sleep(n * vip * otherMoveBuff), Send("{" key " up}" (isSet(key2) && key2 ? "{" key2 " up}" : "" )
+        getWalkTime(d) => return d*(1 + (regWalkFactor-1)*(1-options.VIP))
+        walkSleep(d) => sleep getWalkTime(d)
+        press(key, key2:="", duration := 50) => Send("{" key " down}" (isSet(key2) && key2 ? "{" key2 " down}" : "" ), walkSleep(duration), Send("{" key " up}" (isSet(key2) && key2 ? "{" key2 " up}" : "" )
+        jump() => press(Space)
+        Fwd:="sc011", Back:="sc01f", Left:="sc01e", Right:="sc020", SC_Esc:="sc001", SC_Enter:="sc01c", LShift:="sc02a", Space:="sc039"
+        '
+        )
+        . paths[pathName]
+        Exec := ComObject("WScript.Shell").Exec('"' A_AhkPath '" /script /force *')
+        Exec.StdIn.Write(movement), Exec.StdIn.Close()
 
         stopped := 0
 
@@ -660,7 +681,7 @@ runPath(pathName,voidPoints,noCenter = 0){
                 PixelGetColor, pColor, point[1], point[2], RGB
                 blackCorners += compareColors(pColor,0x000000) < 8
             }
-            PixelGetColor, pColor, rX+width*0.5, rY+height*0.5, RGB
+            PixelGetColor pColor, rX+width*0.5, rY+height*0.5, RGB
             centerBlack := compareColors(pColor,0x000000) < 8
             if (blackCorners = 3 && centerBlack){
                 if (!voidCooldown){
