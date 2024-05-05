@@ -40,20 +40,20 @@ Class Discord {
 	}
 	static CreateFormData(&payload, &contentType, fields) {
 		static chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		Boundary := "------------------------------" SubStr(Sort(chars, "Random"), 1, 12)
+		Boundary := "----------W-NINJU-FEROX-BOUNDARY-" SubStr(Sort(chars, "Random"), 1, 12)
 		Len := 0
-		hGlobal := DllCall("GlobalAlloc", "uint", 0x42, "uint", 1, "ptr")
+		buf := Buffer(0,0)
 		for field in fields {
 			str :=
 			(
 			Boundary '
-			Content-Disposition: form-data ;name="' field.name '" ;' (field.HasProp("filename") ? 'filename="' field.filename '"' : "") '
-			Content-type: ' (field.hasProp("contentType") ? field.contentType : field.HasProp("filename") ? mineType(field.filename) : "application/json") '
+			Content-Disposition: form-data; name="' field.name '";' (field.HasProp("filename") ? ' filename="' field.filename '"' : "") '
+			Content-type: ' (field.hasProp("contentType") ? field.contentType : field.HasProp("filename") ? getContentType(field.filename) : "application/json") '
 			
 			' (field.hasProp("payload") ? field.payload "`r`n" : "")
 			)
 			msgbox str
-			toUtf8(str)
+			buf := toUtf8(str)
 			if field.hasProp("pBitmap") {
 				try {
 					bm := Buffer(40, 0)
@@ -61,27 +61,27 @@ Class Discord {
 					width := NumGet(bm.ptr, 8, "int"), height := NumGet(bm.ptr, 12, "int")
 					data := Buffer(width * height * 4,0)
 					DllCall("GetDIBits", "ptr", field.pBitmap, "ptr", 0, "uint", 0, "uint", height, "ptr", data.ptr, "ptr", bm.ptr, "uint", 0)
-					len += data.size, hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "ptr", len + 1, "ptr", 0x42, "uint")
-					DllCall("RtlMoveMemory", "ptr", hGlobal + len - data.size, "ptr", data.ptr, "uint", data.size)
+					len += data.size, newBuf := Buffer(len, 0)
+					DllCall("RtlMoveMemory", "ptr", newBuf.ptr, "ptr", buf.ptr, "uint", buf.size)
+					buf := newBuf
 				}
 				catch error as e {
 					msgbox e.message
 				}
 			}
 			if field.hasProp("file") {
-				f := FileOpen(field.file, "r"), len += f.size
-				hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "ptr", len + 1, "ptr", 0x42)
-				f.RawRead(hGlobal + len - f.size, f.size), f.Close()
+				f := FileOpen(field.file, "r"), len += f.Length
+				newBuf := Buffer(len, 0)
+				f.RawRead(newBuf.ptr + buf.Size, f.Length), f.Close()
 			}
 		}
-		toUtf8(Boundary "--`r`n")
+		buf := toUtf8(Boundary "--`r`n")
 		payload := ComObjArray(0x11, len)
 		pvData := NumGet(ComObjValue(payload) + 8 + A_PtrSize, "uint")
-		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", hGlobal, "Ptr", len)
-		DllCall("GlobalFree", "Ptr", hGlobal, "Ptr")
+		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", buf, "Ptr", len)
 		contentType := "multipart/form-data; boundary=" SubStr(Boundary,3)
 
-		mineType(FileName) {
+		getContentType(FileName) {
 			if !FileExist(FileName)
 				return "image/png"
 			n:=(f := FileOpen(FileName, "r")).ReadUInt(), f.Close()
@@ -90,7 +90,13 @@ Class Discord {
 				: (n&0xFFFF = 0xD8FF ) ? "image/jpeg"
 				: "application/octet-stream"
 		}
-		toUtf8(str) => (len += l := StrPut(str, "UTF-8")-1, hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "uint", len + 1, "ptr", 0x42), MsgBox("s: " DllCall("GlobalSize", "ptr", hGlobal)), StrPut(str, hGlobal + len - l, l, "UTF-8"))
+		toUtf8(str) {
+			len += StrPut(str, "UTF-8")-1
+			buffNew := Buffer(len, 0)
+			DllCall("RtlMoveMemory", "ptr", buffNew.ptr, "ptr", buf.ptr, "uint", buf.Size)
+			StrPut(str, buffNew.ptr + buf.Size, "UTF-8")
+			return buffNew
+		}
 	}
 }
 
