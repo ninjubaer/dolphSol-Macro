@@ -11,4 +11,5 @@ sendScreenshot(cmd, params) {
     .setImage({url: "attachment://ss.png"})
     .setColor(0x2b2d31)
     .send(cmd["channel_id"], [attachment], "image/png", cmd["id"])
+    Gdip_DisposeImage(pBitmap)
 }

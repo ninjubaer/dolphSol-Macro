@@ -38,77 +38,59 @@ Class Discord {
 		whr.WaitForResponse()
 		return whr.ResponseText
 	}
-	/**
-	 * @author xSPx
-	 */
-	static CreateFormData(&retData, &contentType, fields)
-	{
-		static chars := "0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z"
-
-		chars := Sort(chars, "D| Random")
-		boundary := SubStr(StrReplace(chars, "|"), 1, 12)
-		hData := DllCall("GlobalAlloc", "UInt", 0x2, "UPtr", 0, "Ptr")
-		DllCall("ole32\CreateStreamOnHGlobal", "Ptr", hData, "Int", 0, "PtrP", &pStream:=0, "UInt")
-
-		for field in fields
-		{
+	static CreateFormData(&payload, &contentType, fields) {
+		static chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+		Boundary := "------------------------------" SubStr(Sort(chars, "Random"), 1, 12)
+		Len := 0
+		hGlobal := DllCall("GlobalAlloc", "uint", 0x42, "uint", 1, "ptr")
+		for field in fields {
 			str :=
 			(
-			'
-
-			------------------------------' boundary '
-			Content-Disposition: form-data; name="' field["name"] '"' (field.Has("filename") ? ('; filename="' field["filename"] '"') : "") '
-			Content-Type: ' field["content-type"] '
-
-			' (field.Has("content") ? (field["content"] "`r`n") : "")
+			Boundary '
+			Content-Disposition: form-data ;name="' field.name '" ;' (field.HasProp("filename") ? 'filename="' field.filename '"' : "") '
+			Content-type: ' (field.hasProp("contentType") ? field.contentType : field.HasProp("filename") ? mineType(field.filename) : "application/json") '
+			
+			' (field.hasProp("payload") ? field.payload "`r`n" : "")
 			)
-
-			utf8 := Buffer(length := StrPut(str, "UTF-8") - 1), StrPut(str, utf8, length, "UTF-8")
-			DllCall("shlwapi\IStream_Write", "Ptr", pStream, "Ptr", utf8.Ptr, "UInt", length, "UInt")
-
-			if field.Has("pBitmap")
-			{
-				try
-				{
-					pFileStream := Gdip_SaveBitmapToStream(field["pBitmap"])
-					DllCall("shlwapi\IStream_Size", "Ptr", pFileStream, "UInt64P", &size:=0, "UInt")
-					DllCall("shlwapi\IStream_Reset", "Ptr", pFileStream, "UInt")
-					DllCall("shlwapi\IStream_Copy", "Ptr", pFileStream, "Ptr", pStream, "UInt", size, "UInt")
-					ObjRelease(pFileStream)
+			msgbox str
+			toUtf8(str)
+			if field.hasProp("pBitmap") {
+				try {
+					bm := Buffer(40, 0)
+					DllCall("GetObject", "ptr", field.pBitmap, "int", 40, "ptr", bm.ptr)
+					width := NumGet(bm.ptr, 8, "int"), height := NumGet(bm.ptr, 12, "int")
+					data := Buffer(width * height * 4,0)
+					DllCall("GetDIBits", "ptr", field.pBitmap, "ptr", 0, "uint", 0, "uint", height, "ptr", data.ptr, "ptr", bm.ptr, "uint", 0)
+					len += data.size, hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "ptr", len + 1, "ptr", 0x42, "uint")
+					DllCall("RtlMoveMemory", "ptr", hGlobal + len - data.size, "ptr", data.ptr, "uint", data.size)
+				}
+				catch error as e {
+					msgbox e.message
 				}
 			}
-
-			if field.Has("file")
-			{
-				DllCall("shlwapi\SHCreateStreamOnFileEx", "WStr", field["file"], "Int", 0, "UInt", 0x80, "Int", 0, "Ptr", 0, "PtrP", &pFileStream:=0)
-				DllCall("shlwapi\IStream_Size", "Ptr", pFileStream, "UInt64P", &size:=0, "UInt")
-				DllCall("shlwapi\IStream_Copy", "Ptr", pFileStream, "Ptr", pStream, "UInt", size, "UInt")
-				ObjRelease(pFileStream)
+			if field.hasProp("file") {
+				f := FileOpen(field.file, "r"), len += f.size
+				hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "ptr", len + 1, "ptr", 0x42)
+				f.RawRead(hGlobal + len - f.size, f.size), f.Close()
 			}
 		}
+		toUtf8(Boundary "--`r`n")
+		payload := ComObjArray(0x11, len)
+		pvData := NumGet(ComObjValue(payload) + 8 + A_PtrSize, "uint")
+		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", hGlobal, "Ptr", len)
+		DllCall("GlobalFree", "Ptr", hGlobal, "Ptr")
+		contentType := "multipart/form-data; boundary=" SubStr(Boundary,3)
 
-		str :=
-		(
-		'
-
-		------------------------------' boundary '--
-		'
-		)
-
-		utf8 := Buffer(length := StrPut(str, "UTF-8") - 1), StrPut(str, utf8, length, "UTF-8")
-		DllCall("shlwapi\IStream_Write", "Ptr", pStream, "Ptr", utf8.Ptr, "UInt", length, "UInt")
-		ObjRelease(pStream)
-
-		pData := DllCall("GlobalLock", "Ptr", hData, "Ptr")
-		size := DllCall("GlobalSize", "Ptr", pData, "UPtr")
-
-		retData := ComObjArray(0x11, size)
-		pvData := NumGet(ComObjValue(retData), 8 + A_PtrSize, "Ptr")
-		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", pData, "Ptr", size)
-
-		DllCall("GlobalUnlock", "Ptr", hData)
-		DllCall("GlobalFree", "Ptr", hData, "Ptr")
-		contentType := "multipart/form-data; boundary=----------------------------" boundary
+		mineType(FileName) {
+			if !FileExist(FileName)
+				return "image/png"
+			n:=(f := FileOpen(FileName, "r")).ReadUInt(), f.Close()
+			return n = 0x474E5089 ? "image/png"
+				: n = 0x38464947 ? "image/gif"
+				: (n&0xFFFF = 0xD8FF ) ? "image/jpeg"
+				: "application/octet-stream"
+		}
+		toUtf8(str) => (len += l := StrPut(str, "UTF-8")-1, hGlobal := DllCall("GlobalReAlloc", "ptr", hGlobal, "uint", len + 1, "ptr", 0x42), MsgBox("s: " DllCall("GlobalSize", "ptr", hGlobal)), StrPut(str, hGlobal + len - l, l, "UTF-8"))
 	}
 }
 
@@ -131,7 +113,7 @@ Class EmbedBuilder extends Discord {
 	}
 	/**
 	 * @method setTitle()
-	 * @param {string} title 
+	 * @param {string} title -
 	 */
 	setTitle(title) {
 		if !(title is String)
@@ -268,10 +250,10 @@ Class EmbedBuilder extends Discord {
 		. (isSet(id) ? ', "allowed_mentions": {"parse": []}, "message_reference": {"message_id": "' id '", "fail_if_not_exists": false}}' : "}")
 		if !IsSet(files)
 			return Discord.SendEmbed(channel, payLoad)
-		formData := [Map("name", "payload_json", "content-type", "application/json", "content", payLoad)]
+		formData := [{name:"payload_json", contentType : "application/json", payload: payLoad}]
 		for i in files
 			if i is AttachmentBuilder
-				formData.Push(Map("name", "file[" A_INDEX-1 "]", "filename", i.fileName, "content-type", contentType, i.type, i.file))
+				formData.Push({name: "file[" A_INDEX-1 "]", filename: i.fileName, contentType: contentType, %i.type%: i.file})
 		Discord.CreateFormData(&payLoad, &contentType, formData)
 		return Discord.SendEmbed(channel, payLoad, contentType)
 	}
