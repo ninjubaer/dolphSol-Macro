@@ -1,9 +1,12 @@
-#SingleInstance Force
+/************************************************************************
+ * @description Discord Bot Library for AutoHotkey
+ * @file Discord.ahk
+ * @author ninju | .ninju.
+ * @date 2024/05/05
+ * @version 0.0.1
+ * @credits xSPx for CreateFormData
+ ***********************************************************************/
 
-/* if !A_Args.Length
-    msgbox("This script is not meant to be run directly. Please run the main script instead.",,0x40010)
-    ,ExitApp(-1)
-*/
 Class Discord {
 	static apiBase := "https://discord.com/api/v10"
 
@@ -287,34 +290,3 @@ Class AttachmentBuilder extends EmbedBuilder {
 		this.attachmentName := "attachment://" this.fileName
 	}
 }
-
-ObjHasValue(obj, value) {
-	for k, v in obj
-		if v = value
-			return true
-	return false
-}
-
-BotToken := IniRead(".\..\settings\config.ini", "Options", "BotToken", "")
-msgbox BotToken
-Embed := EmbedBuilder()
-	.setTitle("Connected to Discord")
-	.setColor(0x2b2d31)
-	.setFooter({text: "DolphSol Macro", icon_url: "https://images-ext-1.discordapp.net/external/uH3DFlbzRqjLlk0oPwFqlHVG9wK3v_sdBS2kTwuuaTY/https/cdn.discordapp.com/icons/1216534804217200693/3c807e0201d2362892f272becc6dbe2c.png?format=webp&quality=lossless"})
-	.Send("1207367046313283596")
-loop
-	if (msg := Discord.getMessages("1207367046313283596")) && SubStr(msg["content"], 1, 1) = "?" {
-		cmd := StrSplit(SubStr(msg["content"], 2), " "), ID := msg["id"]
-		switch cmd[1], 0
-		{
-			case "ss":
-				attachment := AttachmentBuilder(pBitmap := Gdip_BitmapFromScreen(), "img.png")
-				Embed := EmbedBuilder()
-					.setImage({url: attachment.attachmentName})
-					.setColor(0x2b2d31)
-					.setFooter({text: "DolphSol Macro", icon_url: "https://images-ext-1.discordapp.net/external/uH3DFlbzRqjLlk0oPwFqlHVG9wK3v_sdBS2kTwuuaTY/https/cdn.discordapp.com/icons/1216534804217200693/3c807e0201d2362892f272becc6dbe2c.png?format=webp&quality=lossless"})
-					.Send(msg["channel_id"], [attachment],"image/png",ID)
-		}
-	}
-
-isSetV(&v) => IsSet(v) ? v : false
