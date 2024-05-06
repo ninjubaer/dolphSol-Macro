@@ -14,6 +14,7 @@ SetWorkingDir A_ScriptDir '\..\'
 BotToken := IniRead(".\settings\config.ini", "Options", "BotToken")
 commandPrefix := "?"
 ChannelID := "1207367046313283596"
+guildID := "1236996797528932373"
 
 #Include CommandHandler.ahk
 #Include %A_ScriptDir%\..\lib
@@ -21,11 +22,16 @@ ChannelID := "1207367046313283596"
 #Include discord.ahk
 
 pToken := Gdip_Startup()
+channels := Discord.getChannelList(guildID)
+channelList := []
+for i in channels
+    if i["type"] = 0
+        channelList.push(i)
 
-loop {
-    if (cmd := Discord.getMessages(1207367046313283596)) is Object and cmd["content"] && SubStr(cmd["content"], 1,1) == commandPrefix
-        commandHandler(cmd)
-}
+loop
+    for i in channelList
+        if (cmd := Discord.getMessage(i["id"])) is Object and cmd["content"] && SubStr(cmd["content"], 1,1) == commandPrefix
+            commandHandler(cmd)
 
 ObjHasValue(obj,value) {
     for k, v in obj

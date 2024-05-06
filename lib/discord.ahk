@@ -10,7 +10,7 @@
 Class Discord {
 	static apiBase := "https://discord.com/api/v10"
 
-	static getMessages(channel) {
+	static getMessage(channel) {
 		static lastMessages := Map()
 		args := lastMessages.Has(channel) ? "?after=" lastMessages[channel] : "?limit=1"
 
@@ -25,6 +25,19 @@ Class Discord {
 		if messages.Has(1)
 			lastMessages[channel] := messages[messages.Length]["id"]
 		return messages.Has(1) ? messages[messages.Length] : false
+	}
+	static getChannelList(guildID) {
+		static channels := ""
+		if (channels)
+			return channels
+		whr := ComObject("WinHttp.WinHttpRequest.5.1")
+		whr.Option[9] := 0x800
+		whr.Open("GET", this.apiBase "/guilds/" guildID "/channels", 1)
+		whr.SetRequestHeader("User-Agent", "AHK DiscordBot Ferox/Ninju")
+		whr.SetRequestHeader("Authorization", "Bot " bottoken)
+		whr.Send()
+		whr.WaitForResponse()
+		return channels := JSON.parse(whr.ResponseText)
 	}
 	static SendEmbed(channel, embeds, conentType := "application/json") {
 		whr := ComObject("WinHttp.WinHttpRequest.5.1")
@@ -41,62 +54,61 @@ Class Discord {
 	static CreateFormData(&payload, &contentType, fields) {
 		static chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 		Boundary := "----------W-NINJU-FEROX-BOUNDARY-" SubStr(Sort(chars, "Random"), 1, 12)
-		Len := 0
-		buf := Buffer(0,0)
+		hGlobal := DllCall("GlobalAlloc", "uint", 0x42, "ptr", 0, "ptr")
+		DllCall("ole32\CreateStreamOnHGlobal", "uptr", hGlobal, "int", 1, "ptr*", &pStream:=0)
+		fileIndex := 0
 		for field in fields {
+			if field is array
+				type := field[2], field := field[1]
+			else type:=field ~= "m)\{.*\}" ? "application/json" : getContentType(field, &isBitmap)
 			str :=
 			(
-			Boundary '
-			Content-Disposition: form-data; name="' field.name '";' (field.HasProp("filename") ? ' filename="' field.filename '"' : "") '
-			Content-type: ' (field.hasProp("contentType") ? field.contentType : field.HasProp("filename") ? getContentType(field.filename) : "application/json") '
+			'
+			' Boundary '
+			Content-Disposition: form-data; name="' (type="application/json" ? "payload_json" : "files[" fileIndex++ "]") '"' (!IsSet(isBitmap) ? "" : '; filename="' (isBitmap ? "image.png" : SubStr(field, InStr(field, "\",,-1)+1)) '"') '
+			Content-type: ' type '
 			
-			' (field.hasProp("payload") ? field.payload "`r`n" : "")
+			'
 			)
-			msgbox str
-			buf := toUtf8(str)
-			if field.hasProp("pBitmap") {
-				try {
-					bm := Buffer(40, 0)
-					DllCall("GetObject", "ptr", field.pBitmap, "int", 40, "ptr", bm.ptr)
-					width := NumGet(bm.ptr, 8, "int"), height := NumGet(bm.ptr, 12, "int")
-					data := Buffer(width * height * 4,0)
-					DllCall("GetDIBits", "ptr", field.pBitmap, "ptr", 0, "uint", 0, "uint", height, "ptr", data.ptr, "ptr", bm.ptr, "uint", 0)
-					len += data.size, newBuf := Buffer(len, 0)
-					DllCall("RtlMoveMemory", "ptr", newBuf.ptr, "ptr", buf.ptr, "uint", buf.size)
-					buf := newBuf
-				}
-				catch error as e {
-					msgbox e.message
-				}
+			. (type = "application/json" ? 
+				payload "`r`n" : "")
+			toUtf8(str)
+			if FileExist(field) {
+				DllCall("shlwapi\SHCreateStreamOnFileEx", "WStr", field, "Int", 0, "UInt", 0x80, "Int", 0, "Ptr", 0, "PtrP", &pFStream:=0)
+				DllCall("shlwapi\IStream_Size", "Ptr", pFStream, "UInt64P", &size:=0, "UInt")
+				DllCall("shlwapi\IStream_Copy", "Ptr", pFStream, "Ptr", pStream, "UInt", size, "UInt")
+				ObjRelease(pFStream)
 			}
-			if field.hasProp("file") {
-				f := FileOpen(field.file, "r"), len += f.Length
-				newBuf := Buffer(len, 0)
-				f.RawRead(newBuf.ptr + buf.Size, f.Length), f.Close()
+			else try {
+				pFStream := Gdip_SaveBitmapToStream(field)
+				DllCall("shlwapi\IStream_Size", "Ptr", pFStream, "UInt64P", &size:=0, "UInt")
+				DllCall("shlwapi\IStream_Reset", "Ptr", pFStream, "UInt")
+				DllCall("shlwapi\IStream_Copy", "Ptr", pFStream, "Ptr", pStream, "UInt", size, "UInt")
+				ObjRelease(pFStream)
 			}
 		}
-		buf := toUtf8(Boundary "--`r`n")
-		payload := ComObjArray(0x11, len)
-		pvData := NumGet(ComObjValue(payload) + 8 + A_PtrSize, "uint")
-		DllCall("RtlMoveMemory", "Ptr", pvData, "Ptr", buf, "Ptr", len)
+		toUtf8("`r`n`r`n" Boundary "--`r`n")
+		pGlobal := DllCall("GlobalLock", "uptr", hGlobal)
+		size := DllCall("GlobalSize", "ptr", pGlobal, "uint")
+
+		payload := ComObjArray(0x11, size)
+		pvData := NumGet(ComObjValue(payload), 8 + A_PtrSize, "ptr")
+		DllCall("RtlMoveMemory", "ptr", pvData, "ptr", pGlobal, "uint", size)
+
+		DllCall("GlobalUnlock", "uptr", hGlobal)
+		DllCall("GlobalFree", "uptr", hGlobal)
+
 		contentType := "multipart/form-data; boundary=" SubStr(Boundary,3)
 
-		getContentType(FileName) {
-			if !FileExist(FileName)
+		getContentType(file, &isBitmap := false) {
+			if !FileExist(file) && isBitmap := true
 				return "image/png"
-			n:=(f := FileOpen(FileName, "r")).ReadUInt(), f.Close()
-			return n = 0x474E5089 ? "image/png"
-				: n = 0x38464947 ? "image/gif"
-				: (n&0xFFFF = 0xD8FF ) ? "image/jpeg"
-				: "application/octet-stream"
+			SplitPath(file,,,&ext), ext := StrLower(ext)
+			return "image/" ext
 		}
-		toUtf8(str) {
-			len += StrPut(str, "UTF-8")-1
-			buffNew := Buffer(len, 0)
-			DllCall("RtlMoveMemory", "ptr", buffNew.ptr, "ptr", buf.ptr, "uint", buf.Size)
-			StrPut(str, buffNew.ptr + buf.Size, "UTF-8")
-			return buffNew
-		}
+		toUtf8(str) =>
+			(utf8 := Buffer(StrPut(str, "UTF-8")-1), StrPut(str, utf8, "UTF-8")
+			DllCall("shlwapi\IStream_Write", "ptr", pStream, "ptr", utf8.ptr, "uint", utf8.Size))
 	}
 }
 
@@ -251,15 +263,15 @@ Class EmbedBuilder extends Discord {
 		this.embedObj.image := image
 		return this
 	}
-	Send(channel, files?, contentType := "application/json", id?) {
+	Send(channel, files?, id?) {
 		payLoad := '{"embeds":' JSON.stringify([this.embedObj])
 		. (isSet(id) ? ', "allowed_mentions": {"parse": []}, "message_reference": {"message_id": "' id '", "fail_if_not_exists": false}}' : "}")
 		if !IsSet(files)
 			return Discord.SendEmbed(channel, payLoad)
-		formData := [{name:"payload_json", contentType : "application/json", payload: payLoad}]
+		formData := [payLoad]
 		for i in files
 			if i is AttachmentBuilder
-				formData.Push({name: "file[" A_INDEX-1 "]", filename: i.fileName, contentType: contentType, %i.type%: i.file})
+				formData.Push(i.file)
 		Discord.CreateFormData(&payLoad, &contentType, formData)
 		return Discord.SendEmbed(channel, payLoad, contentType)
 	}
@@ -269,12 +281,10 @@ Class AttachmentBuilder extends EmbedBuilder {
 	 * new AttachmentBuilder()
 	 * @param File relative path to file
 	 */
-	__New(params*) {
-		if FileExist(params[1])
-			this.fileName := SubStr(params[1], InStr(params[1], "\", 0, -1) + 1), this.type := "file", this.file := params[1]
-		else if IsInteger(params[1])
-			this.fileName := params[2], this.type := "pBitmap", this.file := params[1]
-		else throw Error("Filename <" params[1] "> doesnt exist", , params[1])
+	__New(param) {
+		this.fileName := "image.png", this.file := param
+		loop files param
+			this.file := A_LoopFileFullPath, this.fileName := A_LoopFileName
 		this.attachmentName := "attachment://" this.fileName
 	}
 }

@@ -6,10 +6,12 @@ commands.push({
 })
 
 sendScreenshot(cmd, params) {
-    attachment := AttachmentBuilder(pBitmap := Gdip_BitmapFromScreen(), "ss.png")
+    attachment := AttachmentBuilder(pBitmap := Gdip_BitmapFromScreen())
     embed := EmbedBuilder()
-    .setImage({url: "attachment://ss.png"})
+    .setImage({url: attachment.attachmentName})
+    .setTitle("Screenshot")
     .setColor(0x2b2d31)
-    .send(cmd["channel_id"], [attachment], "image/png", cmd["id"])
+    .setTimeStamp()
+    .send(cmd["channel_id"], [attachment], cmd["id"])
     Gdip_DisposeImage(pBitmap)
 }
